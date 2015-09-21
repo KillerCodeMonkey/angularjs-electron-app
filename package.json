@@ -8,6 +8,8 @@
       "requirejs": "~2.1.20",
       "angular-local-storage": "~0.2.2",
       "angular-ui-bootstrap": "~0.13.3",
-      "jquery": "~2.1.4"
+      "jquery": "~2.1.4",
+      "metismenu": "~2.1.0",
+      "font-awesome": "4.4.0"
   }
 }

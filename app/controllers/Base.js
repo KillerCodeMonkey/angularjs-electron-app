@@ -1,5 +1,6 @@
 define([
-  'app'
+  'app',
+  'directives/sideMenu'
 ], function (app) {
   'use strict';
 
