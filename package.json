@@ -1,5 +1,13 @@
 {
   "name"    : "firstElectronApp",
   "version" : "0.1.0",
-  "main"    : "main.js"
+  "main"    : "main.js",
+  "dependencies": {
+      "angular-ui-router": "~0.2.15",
+      "angular": "~1.4.5",
+      "requirejs": "~2.1.20",
+      "angular-local-storage": "~0.2.2",
+      "angular-ui-bootstrap": "~0.13.3",
+      "jquery": "~2.1.4"
+  }
 }

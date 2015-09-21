@@ -1,0 +1,23 @@
+<div class="col-md-4 col-md-offset-4">
+    <div class="login-panel panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{dict.pleaseLogin}}</h3>
+        </div>
+        <div class="panel-body">
+            <form role="form" name="loginForm" ng-submit="!isLoading && loginForm.$valid && login()">
+                <fieldset>
+                    <div class="form-group">
+                        <input class="form-control" ng-model="auth.login" placeholder="{{dict.email}}" name="email" type="email" autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" ng-model="auth.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                    </div>
+                    <!-- Change this to a button or input when using this as a form -->
+                    <loading-spinner loading="isLoading" class="text-center">
+                        <button type="submit" ng-disabled="!loginForm.$valid" class="btn btn-lg btn-success btn-block">{{dict.login}}</a>
+                    </loading-spinner>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

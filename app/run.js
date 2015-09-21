@@ -1,10 +1,13 @@
 define([
-  'app'
-], function (app) {
-  'use strict';
-  // the run blocks
-  app.run([
-    function () {
-    }
-  ]);
+  'app',
+  'dict/de'
+], function (app, de) {
+    'use strict';
+    // the run blocks
+    app.run([
+        '$rootScope',
+        function ($rootScope) {
+            $rootScope.dict = de;
+        }
+    ]);
 });
