@@ -35,9 +35,11 @@ define([
 
             $scope.chooseDestination = function () {
                 App.chooseFolder(function (path) {
-                    $scope.$apply(function () {
-                        $scope.form.build.path = path.length ? path[0] : null;
-                    });
+                    if (path) {
+                        $scope.$apply(function () {
+                            $scope.form.build.path = path.length ? path[0] : null;
+                        });
+                    }
                 });
             };
 

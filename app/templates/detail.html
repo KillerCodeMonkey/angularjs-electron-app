@@ -33,8 +33,10 @@
              </div>
             <div class="form-group">
                 <label for="branch">{{dict.destination}}</label><br>
-                <p ng-if="form.build.path">{{form.build.path}}<br></p>
-                <button type="button" ng-click="chooseDestination()">{{dict.chooseDestination}}</button>
+                <div class="input-group" ng-click="chooseDestination()">
+                    <span class="input-group-addon"><i class="fa fa-folder-open"></i></span>
+                    <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="">
+                </div>
             </div>
         </form>
     </loading-spinner>
