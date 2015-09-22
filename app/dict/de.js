@@ -11,5 +11,7 @@ define({
     'type': 'Projekt Typ',
     'backend': 'Backend',
     'webapp': 'Webapp',
-    'app': 'App'
+    'app': 'App',
+    'destination': 'Zielordner',
+    'chooseDestination': 'auswählen ...'
 });
