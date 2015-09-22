@@ -23,10 +23,12 @@ app.on('window-all-closed', function() {
 app.on('ready', function() {
     'use strict';
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600, 'web-preferences': {
-      'images': true,
-      'web-security': false
-  }});
+  mainWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      title: 'Build & Deploy',
+      'auto-hide-menu-bar': true
+  });
 
   // and load the index.html of the app.
   mainWindow.loadUrl('file://' + __dirname + '/index.html');
