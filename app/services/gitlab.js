@@ -42,25 +42,25 @@ define([
                 return deferred.promise;
             };
 
-            this.getProjects = function (page) {
-                page = page || 2;
+            this.getProjects = function (url) {
+                url = url || settings.gitLab + 'projects';
                 var deferred = $q.defer(),
                     options = {
-                        url: settings.gitLab + 'projects',
+                        url: url,
                         headers: {
                             'PRIVATE-TOKEN': localStorageService.get('privateToken')
                         },
                         params: {
-                            page: page,
                             'per_page': 20
                         },
                         method: 'get'
                     };
 
-
                 $http(options).then(function (res) {
-                    res.data.pager = pagerService.getPager(res.headers);
-                    deferred.resolve(res.data);
+                    deferred.resolve({
+                        entries: res.data,
+                        pager: pagerService.getPager(res.headers)
+                    });
                 }, deferred.reject);
 
                 return deferred.promise;

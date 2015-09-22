@@ -15,8 +15,8 @@ define([
 
                 angular.forEach(parts, function (part) {
                     subPart = part.split('rel=');
-                    key = subPart[1];
-                    value = subPart[0].replace(/[\<\>\;\s]/g, '');
+                    key = subPart[1].replace(/"/g, '');
+                    value = subPart[0].replace(/[\<\>\;"\s]/g, '');
                     pager[key] = value;
                 });
 
