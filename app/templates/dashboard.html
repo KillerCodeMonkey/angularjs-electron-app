@@ -1,8 +1,8 @@
 <div class="row">
     <div class="col-lg-12">
         <h1 class="page-header">Dashboard</h1>
-        <i class="fa fa-chevron-left" ng-if="projects.pager.prev" ng-click="load(projects.pager.prev)"></i>
-        <i class="fa fa-chevron-right" ng-if="projects.pager.next" ng-click="load(projects.pager.next)"></i>
+        <i class="fa fa-chevron-left fa-2x pull-left" ng-if="projects.pager.prev" ng-click="load(projects.pager.prev)"></i>
+        <i class="fa fa-chevron-right fa-2x pull-right" ng-if="projects.pager.next" ng-click="load(projects.pager.next)"></i>
     </div>
 </div>
 <div class="row">
@@ -15,8 +15,8 @@
                         <img ng-if="project.namespace.avatar.url" height="70" width="70" ng-src="https://gitlab.com{{project.namespace.avatar.url}}?private_token={{privateToken}}">
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge"></div>
-                        <div style="font-weight: bold;">{{project.namespace.name}}</div>
+                        <div class=""><big><strong>{{project.namespace.name}}</strong></big></div>
+                        <div>{{formatDate(project.last_activity_at)}} - {{formatTime(project.last_activity_at)}}</div>
                     </div>
                 </div>
             </div>
@@ -28,5 +28,11 @@
                 </div>
             </a>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <i class="fa fa-chevron-left fa-2x pull-left" ng-if="projects.pager.prev" ng-click="load(projects.pager.prev)"></i>
+        <i class="fa fa-chevron-right fa-2x pull-right" ng-if="projects.pager.next" ng-click="load(projects.pager.next)"></i>
     </div>
 </div>

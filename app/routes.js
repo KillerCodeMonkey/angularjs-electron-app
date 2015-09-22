@@ -12,7 +12,11 @@ define([
   app.config([
     '$stateProvider',
     '$urlRouterProvider',
-    function ($stateProvider, $urlRouterProvider) {
+    '$loadingOverlayConfigProvider',
+    function ($stateProvider, $urlRouterProvider, $loadingOverlayConfigProvider) {
+
+      $loadingOverlayConfigProvider.defaultConfig('<b>Bitte Warten</b>');
+
       // url routes/states
       $urlRouterProvider.otherwise('login');
 

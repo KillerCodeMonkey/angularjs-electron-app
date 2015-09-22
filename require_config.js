@@ -7,6 +7,7 @@ var require = {
         'angular-local-storage': '../node_modules/angular-local-storage/dist/angular-local-storage.min',
         'bootstrap': '../node_modules/bootstrap/dist/js/bootstrap.min',
         'ui-bootstrap': '../node_modules/angular-ui-bootstrap/ui-bootstrap.min',
+        'ng-loading-overlay': '../node_modules/ng-loading-overlay/src/ng-loading-overlay.min',
         'metis': '../node_modules/metismenu/dist/metisMenu.min'
     },
     shim: {
@@ -29,6 +30,9 @@ var require = {
         'ui-bootstrap': {
             deps: ['angular', 'jquery', 'bootstrap'],
             exports: 'uibs'
+        },
+        'ng-loading-overlay': {
+            deps: ['angular']
         }
     },
     priority: [

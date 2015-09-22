@@ -51,7 +51,9 @@ define([
                             'PRIVATE-TOKEN': localStorageService.get('privateToken')
                         },
                         params: {
-                            'per_page': 20
+                            'per_page': 20,
+                            'order_by': 'last_activity_at',
+                            'sort': 'desc'
                         },
                         method: 'get'
                     };
@@ -64,6 +66,39 @@ define([
                 }, deferred.reject);
 
                 return deferred.promise;
+            };
+
+            this.searchProjects = function (query, url) {
+                url = settings.gitLab + 'projects';
+                var deferred = $q.defer(),
+                    options = {
+                        url: url,
+                        headers: {
+                            'PRIVATE-TOKEN': localStorageService.get('privateToken')
+                        },
+                        params: {
+                            'search': query,
+                            'per_page': 20,
+                            'order_by': 'last_activity_at',
+                            'sort': 'desc'
+                        },
+                        method: 'get'
+                    };
+
+                $http(options).then(function (res) {
+                    deferred.resolve({
+                        entries: res.data,
+                        pager: pagerService.getPager(res.headers)
+                    });
+                }, deferred.reject);
+
+                return deferred.promise;
+            };
+
+            this.logout = function () {
+                localStorageService.remove('privateToken');
+                localStorageService.remove('username');
+                localStorageService.remove('avatar');
             };
         }
     ]);

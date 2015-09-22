@@ -4,7 +4,8 @@ define([
   'angular',
   'ui-bootstrap',
   'ui-router',
-  'angular-local-storage'
+  'angular-local-storage',
+  'ng-loading-overlay'
 ], function (angular) {
   'use strict';
 
@@ -12,7 +13,8 @@ define([
   var app = angular.module('app', [
     'ui.router',
     'LocalStorageModule',
-    'ui.bootstrap'
+    'ui.bootstrap',
+    'ngLoadingOverlay'
   ]);
   // return the app so you can require it in other components
   return app;
