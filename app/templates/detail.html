@@ -5,8 +5,29 @@
     <loading-spinner loading="isLoading">
         <form id="buildForm" name="form.buildForm" ng-submit="form.buildForm.$valid && build()">
             <div class="form-group">
-                <label for="exampleInputEmail1">{{dict.branch}}</label>
-                <select ng-model="build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
+                <label for="type">{{dict.type}}</label>
+                <div class="radio disabled">
+                    <label>
+                        <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
+                        {{dict.backend}}
+                    </label>
+                </div>
+                <div class="radio disabled">
+                    <label>
+                        <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
+                        {{dict.webapp}}
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="type" ng-model="form.build.type" value="app">
+                        {{dict.app}}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="branch">{{dict.branch}}</label>
+                <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
                     <option value="">{{dict.selectBranch}}</option>
                 </select>
              </div>

@@ -7,5 +7,9 @@ define({
     'build': 'Build',
     'cancel': 'Abbrechen',
     'branch': 'Branch',
-    'selectBranch': 'Wähle Branch...'
+    'selectBranch': 'Wähle Branch...',
+    'type': 'Projekt Typ',
+    'backend': 'Backend',
+    'webapp': 'Webapp',
+    'app': 'App'
 });
