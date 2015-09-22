@@ -95,6 +95,28 @@ define([
                 return deferred.promise;
             };
 
+            this.getProject = function (id) {
+                var deferred = $q.defer(),
+                    options = {
+                        url: settings.gitLab + 'projects/' + id,
+                        headers: {
+                            'PRIVATE-TOKEN': localStorageService.get('privateToken')
+                        },
+                        method: 'get'
+                    };
+
+                $http(options).then(function (project) {
+                    options.url += '/repository/branches';
+                    $http(options).then(function (branches) {
+                        var result = project.data;
+                        result.branches = branches.data;
+                        deferred.resolve(result);
+                    }, deferred.reject);
+                }, deferred.reject);
+
+                return deferred.promise;
+            };
+
             this.logout = function () {
                 localStorageService.remove('privateToken');
                 localStorageService.remove('username');

@@ -6,7 +6,7 @@ var require = {
         'ui-router': '../node_modules/angular-ui-router/release/angular-ui-router.min',
         'angular-local-storage': '../node_modules/angular-local-storage/dist/angular-local-storage.min',
         'bootstrap': '../node_modules/bootstrap/dist/js/bootstrap.min',
-        'ui-bootstrap': '../node_modules/angular-ui-bootstrap/ui-bootstrap.min',
+        'ui-bootstrap': '../node_modules/angular-ui-bootstrap/ui-bootstrap-tpls.min',
         'ng-loading-overlay': '../node_modules/ng-loading-overlay/src/ng-loading-overlay.min',
         'metis': '../node_modules/metismenu/dist/metisMenu.min'
     },

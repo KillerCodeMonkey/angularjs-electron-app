@@ -5,6 +5,7 @@ define([
   'controllers/App',
   'controllers/Base',
   'controllers/Dashboard',
+  'controllers/Detail',
   'controllers/Login'
 ], function (app) {
   'use strict';
@@ -15,7 +16,7 @@ define([
     '$loadingOverlayConfigProvider',
     function ($stateProvider, $urlRouterProvider, $loadingOverlayConfigProvider) {
 
-      $loadingOverlayConfigProvider.defaultConfig('<b>Bitte Warten</b>');
+      $loadingOverlayConfigProvider.defaultConfig('<div class="text-center"><i class="fa fa-refresh fa-spin"></i><br><b>Bitte Warten</b></div>');
 
       // url routes/states
       $urlRouterProvider.otherwise('login');

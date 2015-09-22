@@ -7,9 +7,10 @@ define([
   app.controller('DashboardCtrl', [
     '$scope',
     '$loadingOverlay',
+    '$modal',
     'gitlabService',
     'localStorageService',
-    function ($scope, $loadingOverlay, gitlabService, localStorageService) {
+    function ($scope, $loadingOverlay, $modal, gitlabService, localStorageService) {
         $scope.privateToken = localStorageService.get('privateToken');
         $loadingOverlay.show();
         gitlabService.getProjects().then(function (projects) {
@@ -35,6 +36,16 @@ define([
                 $loadingOverlay.hide();
             });
         });
+
+        $scope.openDetails = function (id) {
+            $modal.open({
+                'templateUrl': 'app/templates/detail.html',
+                controller: 'DetailCtrl',
+                resolve: {
+                    'id': id
+                }
+            });
+        };
     }
   ]);
 });
