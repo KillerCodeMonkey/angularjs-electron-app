@@ -11,6 +11,8 @@ define([
     'localStorageService',
     'gitlabService',
     function ($scope, $state, localStorageService, gitlabService) {
+        var oldSearchString;
+
         $scope.avatar = localStorageService.get('avatar');
         $scope.privateToken = localStorageService.get('privateToken');
         $scope.logout = function () {
@@ -29,7 +31,8 @@ define([
         };
 
         $scope.search = function () {
-            if ($scope.searchString) {
+            if ($scope.searchString || $scope.searchString !== oldSearchString) {
+                oldSearchString = $scope.searchString;
                 $scope.$broadcast('search', $scope.searchString);
             }
         };
