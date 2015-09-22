@@ -4,6 +4,12 @@
 <div class="modal-body">
     <loading-spinner loading="isLoading">
         <form id="buildForm" name="form.buildForm" ng-submit="form.buildForm.$valid && build()">
+            <div class="form-group">
+                <label for="exampleInputEmail1">{{dict.branch}}</label>
+                <select ng-model="build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
+                    <option value="">{{dict.selectBranch}}</option>
+                </select>
+             </div>
         </form>
     </loading-spinner>
 </div>

@@ -5,5 +5,7 @@ define({
     'password': 'Passwort',
     'title': 'Build und Deploy',
     'build': 'Build',
-    'cancel': 'Abbrechen'
+    'cancel': 'Abbrechen',
+    'branch': 'Branch',
+    'selectBranch': 'Wähle Branch...'
 });
