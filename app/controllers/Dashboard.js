@@ -41,6 +41,7 @@ define([
             $modal.open({
                 'templateUrl': 'app/templates/detail.html',
                 controller: 'DetailCtrl',
+                size: 'large',
                 resolve: {
                     'id': id
                 }

@@ -3,5 +3,7 @@ define({
     'pleaseLogin': 'Bitte einloggen',
     'email': 'E-Mail',
     'password': 'Passwort',
-    'title': 'Build und Deploy'
+    'title': 'Build und Deploy',
+    'build': 'Build',
+    'cancel': 'Abbrechen'
 });

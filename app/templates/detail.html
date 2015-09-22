@@ -1,12 +1,13 @@
 <div class="modal-header">
-    <h3 class="modal-title">I'm a modal!</h3>
+    <h3 class="modal-title">{{project.name}}</h3>
 </div>
 <div class="modal-body">
     <loading-spinner loading="isLoading">
-        asdefas
+        <form id="buildForm" name="form.buildForm" ng-submit="form.buildForm.$valid && build()">
+        </form>
     </loading-spinner>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
-    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+    <button form="buildForm" class="btn btn-success" ng-disabled="!form.buildForm.$valid">{{dict.build}}</button>
+    <button class="btn btn-primary" type="button" ng-click="cancel()">{{dict.cancel}}</button>
 </div>
