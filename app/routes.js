@@ -19,9 +19,9 @@ define([
       $stateProvider
         // app states
         .state('login', {
-          url: '/login',
-          templateUrl: 'app/templates/login.html',
-          controller: 'LoginCtrl'
+            url: '/login',
+            templateUrl: 'app/templates/login.html',
+            controller: 'LoginCtrl'
         })
         .state('base', {
             url: '/',
@@ -30,10 +30,10 @@ define([
             controller: 'BaseCtrl'
         })
         .state('base.dashboard', {
-          url: 'dashboard',
-          templateUrl: 'app/templates/dashboard.html',
-          controller: 'DashboardCtrl'
-      });
+            url: 'dashboard',
+            templateUrl: 'app/templates/dashboard.html',
+            controller: 'DashboardCtrl'
+        });
 
     }
   ]);

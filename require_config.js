@@ -10,15 +10,12 @@ var require = {
         'metis': '../node_modules/metismenu/dist/metisMenu.min'
     },
     shim: {
-        'jquery': {
-            exports: 'jQuery'
-        },
         'metis': {
             deps: ['jquery']
         },
         'angular': {
             exports: 'angular',
-            deps: ['jquery', 'metis']
+            deps: ['metis']
         },
         'ui-router': {
             deps: ['angular']
@@ -33,5 +30,10 @@ var require = {
             deps: ['angular', 'jquery', 'bootstrap'],
             exports: 'uibs'
         }
-    }
+    },
+    priority: [
+        'angular',
+        'ui-bootstrap',
+        'metis'
+    ]
 };

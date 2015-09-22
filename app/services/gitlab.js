@@ -1,6 +1,7 @@
 define([
     'app',
-    'settings'
+    'settings',
+    'services/pager'
 ], function (app, settings) {
     'use strict';
 
@@ -8,7 +9,8 @@ define([
         '$q',
         '$http',
         'localStorageService',
-        function ($q, $http, localStorageService) {
+        'pagerService',
+        function ($q, $http, localStorageService, pagerService) {
             this.login = function (params) {
                 var deferred = $q.defer();
 
@@ -34,6 +36,30 @@ define([
 
 
                 $http(options).then(function (res) {
+                    deferred.resolve(res.data);
+                }, deferred.reject);
+
+                return deferred.promise;
+            };
+
+            this.getProjects = function (page) {
+                page = page || 2;
+                var deferred = $q.defer(),
+                    options = {
+                        url: settings.gitLab + 'projects',
+                        headers: {
+                            'PRIVATE-TOKEN': localStorageService.get('privateToken')
+                        },
+                        params: {
+                            page: page,
+                            'per_page': 20
+                        },
+                        method: 'get'
+                    };
+
+
+                $http(options).then(function (res) {
+                    res.data.pager = pagerService.getPager(res.headers);
                     deferred.resolve(res.data);
                 }, deferred.reject);
 

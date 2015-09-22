@@ -1,14 +1,19 @@
 define([
   'app',
-  'services/service'
+  'services/gitlab'
 ], function (app) {
   'use strict';
 
   app.controller('DashboardCtrl', [
     '$scope',
-    'myService',
-    function ($scope, myService) {
-      $scope.name = myService.getName();
+    'gitlabService',
+    'localStorageService',
+    function ($scope, gitlabService, localStorageService) {
+        gitlabService.getProjects().then(function (projects) {
+            $scope.projects = projects;
+            $scope.privateToken = localStorageService.get('privateToken');
+            console.log(projects);
+        });
     }
   ]);
 });
