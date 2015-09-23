@@ -11,6 +11,7 @@
     "jquery": "~2.1.4",
     "metismenu": "~2.1.0",
     "ng-loading-overlay": "1.1.0",
-    "requirejs": "~2.1.20"
+    "requirejs": "~2.1.20",
+    "shelljs": "~0.5.3"
   }
 }

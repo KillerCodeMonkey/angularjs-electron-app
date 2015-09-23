@@ -36,6 +36,7 @@ define([
             $scope.chooseDestination = function () {
                 App.chooseFolder(function (path) {
                     if (path) {
+                        App.checkoutProject(path);
                         $scope.$apply(function () {
                             $scope.form.build.path = path.length ? path[0] : null;
                         });
