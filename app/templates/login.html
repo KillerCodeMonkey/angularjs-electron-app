@@ -7,10 +7,16 @@
             <form role="form" name="loginForm" ng-submit="!isLoading && loginForm.$valid && login()">
                 <fieldset>
                     <div class="form-group">
-                        <input class="form-control" ng-model="auth.login" placeholder="{{dict.email}}" name="email" type="email" autofocus required>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-envelope input-icon"></i></span>
+                            <input class="form-control" ng-model="auth.login" placeholder="{{dict.email}}" name="email" type="email" autofocus required>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <input class="form-control" ng-model="auth.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
+                            <input class="form-control" ng-model="auth.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                        </div>
                     </div>
                     <!-- Change this to a button or input when using this as a form -->
                     <loading-spinner loading="isLoading" class="text-center">

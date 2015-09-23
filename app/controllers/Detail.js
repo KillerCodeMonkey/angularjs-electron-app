@@ -1,3 +1,4 @@
+/* global define, Build */
 define([
     'app',
     'services/gitlab',
@@ -11,10 +12,13 @@ define([
         '$state',
         '$scope',
         '$modalInstance',
+        '$loadingOverlay',
         'localStorageService',
         'gitlabService',
         'id',
-        function ($q, $location, $state, $scope, $modalInstance, localStorageService, gitlabService, id) {
+        function ($q, $location, $state, $scope, $modalInstance, $loadingOverlay, localStorageService, gitlabService, id) {
+            var buildObject = new Build();
+
             $scope.isLoading = true;
             $scope.form = {
                 buildForm: {},
@@ -34,9 +38,8 @@ define([
             };
 
             $scope.chooseDestination = function () {
-                App.chooseFolder(function (path) {
+                buildObject.chooseFolder(function (path) {
                     if (path) {
-                        App.checkoutProject(path);
                         $scope.$apply(function () {
                             $scope.form.build.path = path.length ? path[0] : null;
                         });
@@ -44,7 +47,40 @@ define([
                 });
             };
 
-            $scope.build = angular.noop;
+            function checkout() {
+                var repoUrl = $scope.project.http_url_to_repo.replace('https://', '');
+                repoUrl = 'https://' + localStorageService.get('username') + ':' + $scope.form.build.password + '@' + repoUrl;
+
+                $loadingOverlay.show();
+                buildObject.cloneProject($scope.form.build.path, repoUrl, $scope.project.name, function (cloneErr) {
+                    if (cloneErr) {
+                        $loadingOverlay.hide();
+                        return;
+                    }
+                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr) {
+                        if (checkoutErr) {
+                            console.log(checkoutErr);
+                            buildObject.removeProject(function () {
+                                $loadingOverlay.hide();
+                                return;
+                            });
+                        } else {
+                            $scope.checkedOut = true;
+                            $loadingOverlay.hide();
+                        }
+                    });
+                });
+            }
+            function build() {
+            }
+
+            $scope.action = function () {
+                if ($scope.checkedOut) {
+                    build();
+                } else {
+                    checkout();
+                }
+            };
         }
     ]);
 });

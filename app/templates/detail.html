@@ -3,28 +3,40 @@
 </div>
 <div class="modal-body">
     <loading-spinner loading="isLoading">
-        <form id="buildForm" name="form.buildForm" ng-submit="form.buildForm.$valid && build()">
-            <div class="form-group">
-                <label for="type">{{dict.type}}</label>
-                <div class="radio disabled">
-                    <label>
-                        <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
-                        {{dict.backend}}
-                    </label>
+        <form id="buildForm" name="form.buildForm">
+            <div class="row">
+                <div class="form-group col-xs-6">
+                    <label for="type">{{dict.type}}</label>
+                    <div class="radio disabled">
+                        <label>
+                            <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
+                            {{dict.backend}}
+                        </label>
+                    </div>
+                    <div class="radio disabled">
+                        <label>
+                            <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
+                            {{dict.webapp}}
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="type" ng-model="form.build.type" value="app">
+                            {{dict.app}}
+                        </label>
+                    </div>
                 </div>
-                <div class="radio disabled">
-                    <label>
-                        <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
-                        {{dict.webapp}}
-                    </label>
-                </div>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="type" ng-model="form.build.type" value="app">
-                        {{dict.app}}
-                    </label>
+                <div class="form-group col-xs-6">
+                    <label for="type">{{dict.gitlabLogin}}</label>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
+                            <input class="form-control" ng-model="form.build.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="clearfix"></div>
             <div class="form-group">
                 <label for="branch">{{dict.branch}}</label>
                 <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
@@ -42,6 +54,6 @@
     </loading-spinner>
 </div>
 <div class="modal-footer">
-    <button form="buildForm" class="btn btn-success" ng-disabled="!form.buildForm.$valid">{{dict.build}}</button>
+    <button form="buildForm" class="btn btn-success" ng-click="action()" ng-disabled="!form.buildForm.$valid">{{checkedOut ? dict.build : dict.checkout}}</button>
     <button class="btn btn-primary" type="button" ng-click="cancel()">{{dict.cancel}}</button>
 </div>

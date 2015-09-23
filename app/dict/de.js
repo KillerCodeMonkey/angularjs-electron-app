@@ -13,5 +13,6 @@ define({
     'webapp': 'Webapp',
     'app': 'App',
     'destination': 'Zielordner',
-    'chooseDestination': 'auswählen ...'
+    'chooseDestination': 'auswählen ...',
+    'gitlabLogin': 'GitLab Login'
 });
