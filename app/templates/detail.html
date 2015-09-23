@@ -1,55 +1,77 @@
-<div class="modal-header">
+<div class="modal-header text-center">
     <h3 class="modal-title">{{project.name}}</h3>
 </div>
 <div class="modal-body">
     <loading-spinner loading="isLoading">
         <form id="buildForm" name="form.buildForm">
-            <div class="row">
-                <div class="form-group col-xs-6">
-                    <label for="type">{{dict.type}}</label>
-                    <div class="radio disabled">
-                        <label>
-                            <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
-                            {{dict.backend}}
-                        </label>
+            <fieldset ng-disabled="checkedOut">
+                <div class="row">
+                    <div class="form-group col-xs-6">
+                        <label for="type">{{dict.type}}</label>
+                        <div class="radio disabled">
+                            <label>
+                                <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
+                                {{dict.backend}}
+                            </label>
+                        </div>
+                        <div class="radio disabled">
+                            <label>
+                                <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
+                                {{dict.webapp}}
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="type" ng-model="form.build.type" value="app">
+                                {{dict.app}}
+                            </label>
+                        </div>
                     </div>
-                    <div class="radio disabled">
-                        <label>
-                            <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
-                            {{dict.webapp}}
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="type" ng-model="form.build.type" value="app">
-                            {{dict.app}}
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group col-xs-6">
-                    <label for="type">{{dict.gitlabLogin}}</label>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
-                            <input class="form-control" ng-model="form.build.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                    <div class="form-group col-xs-6">
+                        <label for="type">{{dict.gitlabLogin}}</label>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
+                                <input class="form-control" ng-model="form.build.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="clearfix"></div>
-            <div class="form-group">
-                <label for="branch">{{dict.branch}}</label>
-                <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
-                    <option value="">{{dict.selectBranch}}</option>
-                </select>
-             </div>
-            <div class="form-group">
-                <label for="branch">{{dict.destination}}</label><br>
-                <div class="input-group" ng-click="chooseDestination()">
-                    <span class="input-group-addon"><i class="fa fa-folder-open"></i></span>
-                    <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="">
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <label for="branch">{{dict.branch}}</label>
+                    <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
+                        <option value="">{{dict.selectBranch}}</option>
+                    </select>
+                 </div>
+                <div class="form-group">
+                    <label for="branch">{{dict.destination}}</label><br>
+                    <div class="input-group" ng-click="!checkedOut && chooseDestination()">
+                        <span class="input-group-addon"><i class="fa fa-folder-open"></i></span>
+                        <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="" required>
+                    </div>
                 </div>
-            </div>
+            </fieldset>
+            <fieldset ng-if="checkedOut">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" value="">
+                    {{dict.minify}}
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" value="">
+                    {{dict.packaging}}
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" value="">
+                    {{dict.imagemin}}
+                  </label>
+                </div>
+            </fieldset>
         </form>
     </loading-spinner>
 </div>

@@ -14,7 +14,7 @@ define([
                 },
                 transclude: true,
                 restrict: 'E',
-                template: '<div ng-transclude="" ng-if="!loading"></div><div ng-if="loading"><p ng-if="loadingText" class="text-center uppercase"><br>{{loadingText}}</p><div class="fa fa-refresh fa-spin"></div></div>'
+                template: '<div ng-transclude="" ng-if="!loading"></div><div ng-if="loading" class="text-center"><p ng-if="loadingText" class="text-center uppercase"><br>{{loadingText}}</p><div class="fa fa-refresh fa-spin"></div></div>'
             };
         }
     ]);

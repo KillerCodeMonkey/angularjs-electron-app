@@ -108,3 +108,29 @@ Build.prototype.removeProject = function (cb) {
         cb();
     });
 };
+
+// create build directory
+Build.prototype.createAndCopy = function (cb) {
+    'use strict';
+
+    var self = this;
+
+    if (!this.path || !this.cloned || !this.checkedOut) {
+        return cb();
+    }
+
+    fs.mkdirs(this.path + '/build', function (dirErr) {
+        var sources = ['app', 'lib', 'resources', 'config.xml', 'index.html'],
+            i = 0,
+            copyError;
+
+        if (!dirErr) {
+            for(i; i < sources.length; i = i + 1) {
+                copyError = fs.copySync(self.path + '/' + sources[i], self.path + '/build/' + sources[i]);
+            }
+            cb(copyError);
+        } else {
+            cb(dirErr);
+        }
+    });
+};

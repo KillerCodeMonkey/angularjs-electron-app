@@ -14,5 +14,9 @@ define({
     'app': 'App',
     'destination': 'Zielordner',
     'chooseDestination': 'auswählen ...',
-    'gitlabLogin': 'GitLab Login'
+    'gitlabLogin': 'GitLab Login',
+    'checkout': 'Checkout',
+    'minify': 'Minifizieren',
+    'packaging': 'Paketieren',
+    'imagemin': 'Bilder optimieren'
 });

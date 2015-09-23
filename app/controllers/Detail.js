@@ -11,12 +11,13 @@ define([
         '$location',
         '$state',
         '$scope',
+        '$timeout',
         '$modalInstance',
         '$loadingOverlay',
         'localStorageService',
         'gitlabService',
         'id',
-        function ($q, $location, $state, $scope, $modalInstance, $loadingOverlay, localStorageService, gitlabService, id) {
+        function ($q, $location, $state, $scope, $timeout, $modalInstance, $loadingOverlay, localStorageService, gitlabService, id) {
             var buildObject = new Build();
 
             $scope.isLoading = true;
@@ -54,24 +55,41 @@ define([
                 $loadingOverlay.show();
                 buildObject.cloneProject($scope.form.build.path, repoUrl, $scope.project.name, function (cloneErr) {
                     if (cloneErr) {
-                        $loadingOverlay.hide();
-                        return;
+                        return $timeout(function () {
+                            $loadingOverlay.hide();
+                        });
                     }
                     buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr) {
                         if (checkoutErr) {
-                            console.log(checkoutErr);
                             buildObject.removeProject(function () {
-                                $loadingOverlay.hide();
-                                return;
+                                return $timeout(function () {
+                                    $loadingOverlay.hide();
+                                });
                             });
                         } else {
-                            $scope.checkedOut = true;
-                            $loadingOverlay.hide();
+                            $timeout(function () {
+                                $scope.checkedOut = true;
+                                $loadingOverlay.hide();
+                            });
                         }
                     });
                 });
             }
             function build() {
+                $loadingOverlay.show();
+                buildObject.createAndCopy(function (someError) {
+                    if (someError) {
+                        $timeout(function () {
+                            console.log('geht');
+                            $loadingOverlay.hide();
+                        });
+                    } else {
+                        $timeout(function () {
+                            console.log(someError);
+                            $loadingOverlay.hide();
+                        });
+                    }
+                });
             }
 
             $scope.action = function () {
