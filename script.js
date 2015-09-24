@@ -3,6 +3,8 @@ var remote = require('remote'),
     dialog = remote.require('dialog'),
     exec = require('child_process').exec,
     fs = require('fs-extra'),
+    amdclean = require('amdclean'),
+    Imagemin = require('imagemin'),
 
     Build = function () {
         'use strict';
@@ -13,7 +15,6 @@ var remote = require('remote'),
         this.cloned = false;
         this.checkedOut = false;
     };
-
 
 // show choose folder path window
 Build.prototype.chooseFolder = function (cb) {
@@ -128,7 +129,31 @@ Build.prototype.createAndCopy = function (cb) {
             for(i; i < sources.length; i = i + 1) {
                 copyError = fs.copySync(self.path + '/' + sources[i], self.path + '/build/' + sources[i]);
             }
-            cb(copyError);
+            if (copyError) {
+                return cb(copyError);
+            }
+            var ImageMin = new Imagemin();
+            ImageMin
+                .use(Imagemin.gifsicle({interlaced: true}))
+                .use(Imagemin.jpegtran({progressive: true}))
+                .use(Imagemin.optipng({optimizationLevel: 3}))
+                .src(self.path + '/build/resources/**/*.{gif,jpg,png,svg}')
+                .dest(self.path + '/build/resources')
+                .run(function (err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    exec('node_modules/.bin/r.js -o ' + self.path + '/app.build.js', function (rErr) {
+                        if (rErr) {
+                            return cb(rErr);
+                        }
+                        var cleanedCode = amdclean.clean({
+                            'filePath': self.path + '/build/app.min.js'
+                        });
+                        fs.writeFileSync(self.path + '/build/app.min.js', cleanedCode);
+                        cb();
+                    });
+                });
         } else {
             cb(dirErr);
         }

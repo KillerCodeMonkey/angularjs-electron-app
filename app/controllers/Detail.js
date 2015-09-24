@@ -80,12 +80,10 @@ define([
                 buildObject.createAndCopy(function (someError) {
                     if (someError) {
                         $timeout(function () {
-                            console.log('geht');
                             $loadingOverlay.hide();
                         });
                     } else {
                         $timeout(function () {
-                            console.log(someError);
                             $loadingOverlay.hide();
                         });
                     }
