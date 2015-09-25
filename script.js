@@ -5,6 +5,7 @@ var remote = require('remote'),
     fs = require('fs-extra'),
     amdclean = require('amdclean'),
     Imagemin = require('imagemin'),
+    path = require('path'),
 
     Build = function () {
         'use strict';
@@ -121,7 +122,7 @@ Build.prototype.createAndCopy = function (cb) {
     }
 
     fs.mkdirs(this.path + '/build', function (dirErr) {
-        var sources = ['app', 'lib', 'resources', 'config.xml', 'index.html'],
+        var sources = ['app/templates', 'lib', 'resources', 'config.xml', 'index.html'],
             i = 0,
             copyError;
 
@@ -137,20 +138,21 @@ Build.prototype.createAndCopy = function (cb) {
                 .use(Imagemin.gifsicle({interlaced: true}))
                 .use(Imagemin.jpegtran({progressive: true}))
                 .use(Imagemin.optipng({optimizationLevel: 3}))
-                .src(self.path + '/build/resources/**/*.{gif,jpg,png,svg}')
-                .dest(self.path + '/build/resources')
+                .src(self.path + path.normalize('/build/resources/**/*.{gif,jpg,png,svg}'))
+                .dest(self.path + path.normalize('/build/resources'))
                 .run(function (err) {
                     if (err) {
                         return cb(err);
                     }
-                    exec('node_modules/.bin/r.js -o ' + self.path + '/app.build.js', function (rErr) {
+                    exec(path.normalize('node_modules/.bin/r.js.cmd -o ') + path.normalize(self.path) + path.normalize('/app.build.js'), function (rErr) {
                         if (rErr) {
                             return cb(rErr);
                         }
                         var cleanedCode = amdclean.clean({
-                            'filePath': self.path + '/build/app.min.js'
+                            'filePath': path.normalize(self.path) + path.normalize('/build/app/app.min.js')
                         });
-                        fs.writeFileSync(self.path + '/build/app.min.js', cleanedCode);
+                        fs.writeFileSync(path.normalize(self.path) + path.normalize('/build/app/app.min.js'), cleanedCode);
+
                         cb();
                     });
                 });
