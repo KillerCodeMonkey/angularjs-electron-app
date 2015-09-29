@@ -3,7 +3,6 @@ var remote = require('remote'),
     dialog = remote.require('dialog'),
     exec = require('child_process').exec,
     fs = require('fs-extra'),
-    amdclean = require('amdclean'),
     Imagemin = require('imagemin'),
     path = require('path'),
 
@@ -34,10 +33,10 @@ Build.prototype.chooseFolder = function (cb) {
 };
 
 // clone project to chosen folder
-Build.prototype.cloneProject = function (path, repoUrl, name, cb) {
+Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
     'use strict';
 
-    this.path = path || this.path;
+    this.path = folderPath || this.path;
     this.repoUrl = repoUrl || this.repoUrl;
     this.name = name || this.name;
 
@@ -122,13 +121,25 @@ Build.prototype.createAndCopy = function (cb) {
     }
 
     fs.mkdirs(this.path + '/build', function (dirErr) {
-        var sources = ['app/templates', 'lib', 'resources', 'config.xml', 'index.html'],
+        var sources = ['app/templates', 'resources', 'config.xml'],
             i = 0,
+            appBuildConfig = self.path + '/app.build.js',
+            almond = './node_modules/almond/almond.js',
             copyError;
 
         if (!dirErr) {
             for(i; i < sources.length; i = i + 1) {
                 copyError = fs.copySync(self.path + '/' + sources[i], self.path + '/build/' + sources[i]);
+            }
+            if (copyError) {
+                return cb(copyError);
+            }
+            copyError = fs.copySync(almond, self.path + '/almond.js');
+            if (copyError) {
+                return cb(copyError);
+            }
+            if (!fs.existsSync(appBuildConfig)) {
+                copyError = fs.copySync('./app.build.js', appBuildConfig);
             }
             if (copyError) {
                 return cb(copyError);
@@ -144,14 +155,23 @@ Build.prototype.createAndCopy = function (cb) {
                     if (err) {
                         return cb(err);
                     }
-                    exec(path.normalize('node_modules/.bin/r.js.cmd -o ') + path.normalize(self.path) + path.normalize('/app.build.js'), function (rErr) {
+
+                    var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js',
+                        indexContent = fs.readFileSync(self.path + '/index.html', {
+                            encoding: 'utf8'
+                        });
+                    // change index.html
+                    indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
+                    indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
+                    indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
+
+                    fs.writeFileSync(self.path + '/build/index.html', indexContent);
+
+                    exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(self.path + '/app.build.js'), function (rErr, rOut, rErrOut) {
                         if (rErr) {
+                            console.log(rErr, rOut, rErrOut);
                             return cb(rErr);
                         }
-                        var cleanedCode = amdclean.clean({
-                            'filePath': path.normalize(self.path) + path.normalize('/build/app/app.min.js')
-                        });
-                        fs.writeFileSync(path.normalize(self.path) + path.normalize('/build/app/app.min.js'), cleanedCode);
 
                         cb();
                     });

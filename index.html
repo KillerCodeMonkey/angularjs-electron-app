@@ -13,15 +13,14 @@
     <link href="css/style.css" rel="stylesheet">
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="script.js"></script>
-
+  </head>
+  <body ng-controller="AppCtrl">
+    <ui-view></ui-view>
     <!-- load requirejs config -->
     <script src="require_config.js"></script>
     <!-- load requirejs -->
     <script src="node_modules/requirejs/require.js"></script>
     <!-- load boot-script - it loads configs, routes, runs and bootstraps the app -->
     <script src="app/boot.js"></script>
-  </head>
-  <body ng-controller="AppCtrl">
-    <ui-view></ui-view>
   </body>
 </html>

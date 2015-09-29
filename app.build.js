@@ -1,9 +1,8 @@
 ({
-    include: ['boot', 'dicts/de'],
-    out: 'build/app/app.min.js',
+    name: '../almond',
     baseUrl: 'app/',
     mainConfigFile: 'app/main.js',
-    optimize: 'uglify2',
-    insertRequire: ['boot'],
-    wrap: true
+    include: ['boot', 'dicts/de'],
+    out: 'build/app/app.min.js',
+    optimize: 'uglify2'
 });
