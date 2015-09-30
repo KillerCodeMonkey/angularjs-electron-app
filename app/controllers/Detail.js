@@ -77,7 +77,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.createAndCopy(function (someError) {
+                buildObject.build(function (someError) {
                     if (someError) {
                         $timeout(function () {
                             $loadingOverlay.hide();

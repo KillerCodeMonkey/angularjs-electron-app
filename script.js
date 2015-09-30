@@ -6,6 +6,7 @@ var remote = require('remote'),
     Imagemin = require('imagemin'),
     zipper = require('zip-local'),
     path = require('path'),
+    Promise = require('bluebird'),
 
     Build = function () {
         'use strict';
@@ -16,6 +17,95 @@ var remote = require('remote'),
         this.cloned = false;
         this.checkedOut = false;
     };
+
+function optiImage(basePath, src, dest) {
+    'use strict';
+    var ImageMin = new Imagemin();
+
+    return new Promise(function (resolve, reject) {
+        ImageMin
+            .use(Imagemin.gifsicle({interlaced: true}))
+            .use(Imagemin.jpegtran({progressive: true}))
+            .use(Imagemin.optipng({optimizationLevel: 3}))
+            .src(basePath + path.normalize(src + '/**/*.{gif,jpg,png,svg}'))
+            .dest(basePath + path.normalize(dest))
+            .run(function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
+    });
+}
+
+function clearIndex(basePath) {
+    'use strict';
+    return new Promise(function (resolve, reject) {
+        fs.readFile(basePath + '/index.html', {
+            encoding: 'utf8'
+        }, function (readErr, indexContent) {
+            if (readErr) {
+                return reject(readErr);
+            }
+            // change index.html
+            indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
+            indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
+            indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
+
+            fs.writeFile(basePath + '/build/index.html', indexContent, function (writeErr) {
+                if (writeErr) {
+                    return reject(writeErr);
+                }
+                resolve();
+            });
+        });
+    });
+}
+
+function uglyfyMinify(basePath) {
+    'use strict';
+    var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
+
+    return new Promise(function (resolve, reject) {
+        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr) {
+            if (rErr) {
+                return reject(rErr);
+            }
+            resolve();
+        });
+    });
+}
+
+function copy(src, dest) {
+    'use strict';
+    return new Promise(function (resolve, reject) {
+        fs.copy(src, dest, function (err) {
+            if (err) {
+                return reject(err);
+            }
+            resolve();
+        });
+    });
+}
+
+function copyFiles(basePath) {
+    'use strict';
+    var sources = ['app/templates', 'config.xml'],
+        i = 0,
+        appBuildConfig = basePath + '/app.build.js',
+        almond = './node_modules/almond/almond.js',
+        tasks = [];
+
+    for (i; i < sources.length; i = i + 1) {
+        tasks.push(copy(basePath + '/' + sources[i], basePath + '/build/' + sources[i]));
+    }
+    tasks.push(copy(almond, basePath + '/almond.js'));
+    tasks.push(copy('./app.build.js', appBuildConfig));
+
+    return new Promise(function (resolve, reject) {
+        Promise.all(tasks).then(resolve, reject);
+    });
+}
 
 // show choose folder path window
 Build.prototype.chooseFolder = function (cb) {
@@ -112,7 +202,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.createAndCopy = function (cb) {
+Build.prototype.build = function (cb) {
     'use strict';
 
     var self = this;
@@ -122,67 +212,23 @@ Build.prototype.createAndCopy = function (cb) {
     }
 
     fs.mkdirs(this.path + '/build', function (dirErr) {
-        var sources = ['app/templates', 'resources', 'config.xml'],
-            i = 0,
-            appBuildConfig = self.path + '/app.build.js',
-            almond = './node_modules/almond/almond.js',
-            copyError;
-
-        if (!dirErr) {
-            for(i; i < sources.length; i = i + 1) {
-                copyError = fs.copySync(self.path + '/' + sources[i], self.path + '/build/' + sources[i]);
-            }
-            if (copyError) {
-                return cb(copyError);
-            }
-            copyError = fs.copySync(almond, self.path + '/almond.js');
-            if (copyError) {
-                return cb(copyError);
-            }
-            if (!fs.existsSync(appBuildConfig)) {
-                copyError = fs.copySync('./app.build.js', appBuildConfig);
-            }
-            if (copyError) {
-                return cb(copyError);
-            }
-            var ImageMin = new Imagemin();
-            ImageMin
-                .use(Imagemin.gifsicle({interlaced: true}))
-                .use(Imagemin.jpegtran({progressive: true}))
-                .use(Imagemin.optipng({optimizationLevel: 3}))
-                .src(self.path + path.normalize('/build/resources/**/*.{gif,jpg,png,svg}'))
-                .dest(self.path + path.normalize('/build/resources'))
-                .run(function (err) {
-                    if (err) {
-                        return cb(err);
-                    }
-
-                    var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js',
-                        indexContent = fs.readFileSync(self.path + '/index.html', {
-                            encoding: 'utf8'
-                        });
-                    // change index.html
-                    indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
-                    indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
-                    indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
-
-                    fs.writeFileSync(self.path + '/build/index.html', indexContent);
-
-                    exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(self.path + '/app.build.js'), function (rErr, rOut, rErrOut) {
-                        if (rErr) {
-                            console.log(rErr, rOut, rErrOut);
-                            return cb(rErr);
-                        }
-
-                        zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
-                            zipped.compress();
-                            zipped.save(path.normalize(self.path + '.zip'));
-                            cb();
-                        });
-                    });
-                });
-        } else {
-            cb(dirErr);
+        if (dirErr) {
+            return cb(dirErr);
         }
+        Promise.all([
+            copyFiles(self.path).then(function () {
+                return uglyfyMinify(self.path);
+            }),
+            optiImage(self.path, '/resources', '/build/resources'),
+            clearIndex(self.path)
+        ]).then(function () {
+            zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
+                zipped.compress();
+                zipped.save(path.normalize(self.path + '.zip'));
+                //fs.remove(self.path, function () {
+                    cb();
+                //});
+            });
+        }, cb);
     });
 };

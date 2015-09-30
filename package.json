@@ -8,6 +8,7 @@
     "angular-local-storage": "~0.2.2",
     "angular-ui-bootstrap": "~0.13.3",
     "angular-ui-router": "~0.2.15",
+    "bluebird": "^2.10.1",
     "font-awesome": "4.4.0",
     "fs-extra": "~0.24.0",
     "imagemin": "~3.2.0",
