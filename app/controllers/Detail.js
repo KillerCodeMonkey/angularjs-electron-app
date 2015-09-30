@@ -77,7 +77,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build('TROIKA', '010090', function (someError) {
+                buildObject.build($scope.form.build.appName, $scope.form.build.appVersion, function (someError) {
                     if (someError) {
                         $timeout(function () {
                             $loadingOverlay.hide();

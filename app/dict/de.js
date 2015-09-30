@@ -18,5 +18,9 @@ define({
     'checkout': 'Checkout',
     'minify': 'Minifizieren',
     'packaging': 'Paketieren',
-    'imagemin': 'Bilder optimieren'
+    'imagemin': 'Bilder optimieren',
+    'appVersion': 'App Version',
+    'appName': 'App Name',
+    'name': 'Name',
+    'version': 'Version'
 });

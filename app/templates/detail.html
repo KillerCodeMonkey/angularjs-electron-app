@@ -40,36 +40,41 @@
                 <div class="clearfix"></div>
                 <div class="form-group">
                     <label for="branch">{{dict.branch}}</label>
-                    <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
-                        <option value="">{{dict.selectBranch}}</option>
-                    </select>
+                    <div class="input-group" ng-click="!checkedOut && chooseDestination()">
+                        <span class="input-group-addon"><i class="fa fa-code-fork input-icon"></i></span>
+                        <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
+                            <option value="">{{dict.selectBranch}}</option>
+                        </select>
+                    </div>
                  </div>
                 <div class="form-group">
                     <label for="branch">{{dict.destination}}</label><br>
                     <div class="input-group" ng-click="!checkedOut && chooseDestination()">
-                        <span class="input-group-addon"><i class="fa fa-folder-open"></i></span>
+                        <span class="input-group-addon"><i class="fa fa-folder-open input-icon"></i></span>
                         <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="" required>
                     </div>
                 </div>
             </fieldset>
             <fieldset ng-if="checkedOut">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" value="">
-                    {{dict.minify}}
-                  </label>
-                </div>
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" value="">
-                    {{dict.packaging}}
-                  </label>
-                </div>
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" value="">
-                    {{dict.imagemin}}
-                  </label>
+                <div class="row">
+                    <div class="form-group col-xs-6">
+                        <label for="type">{{dict.appName}}</label>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-file-archive-o input-icon"></i></span>
+                                <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" value="" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-xs-6">
+                        <label for="type">{{dict.appVersion}}</label>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-tag input-icon"></i></span>
+                                <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" value="" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
         </form>

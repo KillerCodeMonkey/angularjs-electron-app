@@ -256,9 +256,9 @@ Build.prototype.build = function (name, version, cb) {
             zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
                 zipped.compress();
                 zipped.save(path.normalize(self.path + '.zip'));
-                //fs.remove(self.path, function () {
+                fs.remove(self.path, function () {
                     cb();
-                //});
+                });
             });
         }, cb);
     });
