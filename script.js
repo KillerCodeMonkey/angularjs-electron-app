@@ -62,6 +62,30 @@ function clearIndex(basePath) {
     });
 }
 
+function createConfig(basePath, name, version) {
+    'use strict';
+    return new Promise(function (resolve, reject) {
+        fs.readFile(basePath + '/config.xml', {
+            encoding: 'utf8'
+        }, function (readErr, configContent) {
+            if (readErr) {
+                return reject(readErr);
+            }
+            // change config.xml
+            configContent = configContent.replace(/\<name\>[^\<]*\<\/name\>/, '<name>' + name + '</name>');
+            configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionCode="' + version + '"$2>');
+            configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
+
+            fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
+                if (writeErr) {
+                    return reject(writeErr);
+                }
+                resolve();
+            });
+        });
+    });
+}
+
 function uglyfyMinify(basePath) {
     'use strict';
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
@@ -90,7 +114,7 @@ function copy(src, dest) {
 
 function copyFiles(basePath) {
     'use strict';
-    var sources = ['app/templates', 'config.xml'],
+    var sources = ['app/templates'],
         i = 0,
         appBuildConfig = basePath + '/app.build.js',
         almond = './node_modules/almond/almond.js',
@@ -202,10 +226,16 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (cb) {
+Build.prototype.build = function (name, version, cb) {
     'use strict';
 
     var self = this;
+
+    if (!name || !version) {
+        return cb();
+    }
+    self.appName = name;
+    self.appVersion = version;
 
     if (!this.path || !this.cloned || !this.checkedOut) {
         return cb();
@@ -220,7 +250,8 @@ Build.prototype.build = function (cb) {
                 return uglyfyMinify(self.path);
             }),
             optiImage(self.path, '/resources', '/build/resources'),
-            clearIndex(self.path)
+            clearIndex(self.path),
+            createConfig(self.path, self.appName, self.appVersion)
         ]).then(function () {
             zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
                 zipped.compress();

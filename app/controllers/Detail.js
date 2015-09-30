@@ -77,7 +77,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build(function (someError) {
+                buildObject.build('TROIKA', '010090', function (someError) {
                     if (someError) {
                         $timeout(function () {
                             $loadingOverlay.hide();
