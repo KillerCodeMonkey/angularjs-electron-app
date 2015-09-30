@@ -14,6 +14,7 @@ var remote = require('remote'),
         this.path = '';
         this.repoUrl = '';
         this.branch = '';
+        this.includePaths = [];
         this.cloned = false;
         this.checkedOut = false;
     };
@@ -86,7 +87,7 @@ function createConfig(basePath, name, version) {
     });
 }
 
-function uglyfyMinify(basePath) {
+function uglifyMinify(basePath) {
     'use strict';
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
 
@@ -96,6 +97,50 @@ function uglyfyMinify(basePath) {
                 return reject(rErr);
             }
             resolve();
+        });
+    });
+}
+
+function createAppBuildConfig(basePath, includePaths) {
+    'use strict';
+    var appBuildConfig = basePath + '/app.build.js',
+        pathString;
+
+    includePaths.forEach(function (includePath) {
+        includePath = includePath.replace(basePath + '/app/', '');
+        if (includePath) {
+            if (pathString) {
+                pathString += ', ';
+            } else {
+                pathString = '';
+            }
+            pathString += '"' + includePath + '"';
+        }
+    });
+
+    return new Promise(function (resolve, reject) {
+        if (!pathString) {
+            return fs.copy('./app.build.js', appBuildConfig, function (writeErr) {
+                if (writeErr) {
+                    return reject(writeErr);
+                }
+                resolve();
+            });
+        }
+        fs.readFile('./app.build.js', {
+            encoding: 'utf8'
+        }, function (readErr, configContent) {
+            if (readErr) {
+                return reject(readErr);
+            }
+            configContent = configContent.replace(/include\s*:\s*\[([^\]]*)\]/, 'include: [$1, ' + pathString + ']');
+
+            fs.writeFile(appBuildConfig, configContent, function (writeErr) {
+                if (writeErr) {
+                    return reject(writeErr);
+                }
+                resolve();
+            });
         });
     });
 }
@@ -116,7 +161,6 @@ function copyFiles(basePath) {
     'use strict';
     var sources = ['app/templates'],
         i = 0,
-        appBuildConfig = basePath + '/app.build.js',
         almond = './node_modules/almond/almond.js',
         tasks = [];
 
@@ -124,7 +168,6 @@ function copyFiles(basePath) {
         tasks.push(copy(basePath + '/' + sources[i], basePath + '/build/' + sources[i]));
     }
     tasks.push(copy(almond, basePath + '/almond.js'));
-    tasks.push(copy('./app.build.js', appBuildConfig));
 
     return new Promise(function (resolve, reject) {
         Promise.all(tasks).then(resolve, reject);
@@ -142,6 +185,22 @@ Build.prototype.chooseFolder = function (cb) {
     }, function (paths) {
         if (paths && paths[0]) {
             self.path = paths[0];
+        }
+        cb(paths);
+    });
+};
+
+// show choose files to explicit include
+Build.prototype.chooseIncludeFiles = function (cb) {
+    'use strict';
+
+    var self = this;
+
+    dialog.showOpenDialog({
+        properties: ['openFile', 'multiSelections']
+    }, function (paths) {
+        if (paths && paths.length) {
+            self.includePaths = paths;
         }
         cb(paths);
     });
@@ -247,7 +306,9 @@ Build.prototype.build = function (name, version, cb) {
         }
         Promise.all([
             copyFiles(self.path).then(function () {
-                return uglyfyMinify(self.path);
+                return createAppBuildConfig(self.path, self.includePaths);
+            }).then(function () {
+                return uglifyMinify(self.path);
             }),
             optiImage(self.path, '/resources', '/build/resources'),
             clearIndex(self.path),
@@ -257,7 +318,8 @@ Build.prototype.build = function (name, version, cb) {
                 zipped.compress();
                 zipped.save(path.normalize(self.path + '.zip'));
                 fs.remove(self.path, function () {
-                    cb();
+                    self.package = path.normalize(self.path + '.zip');
+                    cb(null, path.normalize(self.path + '.zip'));
                 });
             });
         }, cb);

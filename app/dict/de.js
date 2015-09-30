@@ -6,6 +6,7 @@ define({
     'title': 'Build und Deploy',
     'build': 'Build',
     'cancel': 'Abbrechen',
+    'finish': 'Fertig',
     'branch': 'Branch',
     'selectBranch': 'Wähle Branch...',
     'type': 'Projekt Typ',
@@ -22,5 +23,6 @@ define({
     'appVersion': 'App Version',
     'appName': 'App Name',
     'name': 'Name',
-    'version': 'Version'
+    'version': 'Version',
+    'includeFiles': 'Zusätzliche Dateien hinzufügen (z.B. Übersetzungen)'
 });

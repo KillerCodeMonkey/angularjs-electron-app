@@ -8,3 +8,7 @@
 .input-icon {
     width: 25px;
 }
+
+.input-group.list {
+    margin-top: 10px;
+}

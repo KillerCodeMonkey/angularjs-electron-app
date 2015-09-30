@@ -55,13 +55,24 @@
                     </div>
                 </div>
             </fieldset>
-            <fieldset ng-if="checkedOut">
+            <fieldset ng-if="checkedOut" ng-disabled="success">
+                <div class="form-group">
+                    <label>{{dict.includeFiles}}</label><br>
+                    <div class="input-group" ng-click="!success && checkedOut && chooseIncludeFiles()">
+                        <span class="input-group-addon"><i class="fa fa-files-o input-icon"></i></span>
+                        <input type="text" class="form-control" placeholder="{{dict.chooseDestination}}" readonly="">
+                    </div>
+                    <div class="input-group list" ng-repeat="file in form.build.includeFiles">
+                        <input type="text" class="form-control" disabled="" value="{{file}}" readonly="">
+                        <span class="input-group-addon" ng-click="!success && removeIncludeFile($index)"><i class="fa fa-trash-o input-icon"></i></span>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="form-group col-xs-6">
                         <label for="type">{{dict.appName}}</label>
                         <div class="form-group">
                             <div class="input-group">
-                                <span class="input-group-addon"><i class="fa fa-file-archive-o input-icon"></i></span>
+                                <span class="input-group-addon"><i class="fa fa-font input-icon"></i></span>
                                 <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" value="" required>
                             </div>
                         </div>
@@ -81,6 +92,16 @@
     </loading-spinner>
 </div>
 <div class="modal-footer">
-    <button form="buildForm" class="btn btn-success" ng-click="action()" ng-disabled="!form.buildForm.$valid">{{checkedOut ? dict.build : dict.checkout}}</button>
-    <button class="btn btn-primary" type="button" ng-click="cancel()">{{dict.cancel}}</button>
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="input-group" ng-if="success">
+                <span class="input-group-addon"><i class="fa fa-file-archive-o input-icon"></i></span>
+                <input type="text" readonly="" value="{{form.build.packagePath}}" class="form-control">
+            </div>
+        </div>
+        <div class="col-xs-6">
+            <button form="buildForm" ng-if="!success" class="btn btn-success" ng-click="action()" ng-disabled="!form.buildForm.$valid">{{checkedOut ? dict.build : dict.checkout}}</button>
+            <button class="btn btn-primary" type="button" ng-click="cancel()">{{dict.finish}}</button>
+        </div>
+    </div>
 </div>

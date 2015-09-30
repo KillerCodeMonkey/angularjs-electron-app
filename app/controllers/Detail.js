@@ -24,7 +24,8 @@ define([
             $scope.form = {
                 buildForm: {},
                 build: {
-                    type: 'app'
+                    type: 'app',
+                    includeFiles: []
                 }
             };
 
@@ -46,6 +47,23 @@ define([
                         });
                     }
                 });
+            };
+
+            $scope.chooseIncludeFiles = function () {
+                buildObject.chooseIncludeFiles(function (paths) {
+                    if (paths && paths.length) {
+                        $scope.$apply(function () {
+                            $scope.form.build.includeFiles = $scope.form.build.includeFiles.concat(paths);
+                        });
+                    }
+                });
+            };
+
+            $scope.removeIncludeFile = function (index) {
+                if ($scope.form.build.includeFiles[index]) {
+                    $scope.form.build.includeFiles.splice(index, 1);
+                    buildObject.includePaths.splice(index, 1);
+                }
             };
 
             function checkout() {
@@ -77,7 +95,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.appName, $scope.form.build.appVersion, function (someError) {
+                buildObject.build($scope.form.build.appName, $scope.form.build.appVersion, function (someError, zipPath) {
                     if (someError) {
                         $timeout(function () {
                             $loadingOverlay.hide();
@@ -85,6 +103,8 @@ define([
                     } else {
                         $timeout(function () {
                             $loadingOverlay.hide();
+                            $scope.success = true;
+                            $scope.form.build.packagePath = zipPath;
                         });
                     }
                 });
