@@ -4,6 +4,7 @@ var remote = require('remote'),
     exec = require('child_process').exec,
     fs = require('fs-extra'),
     Imagemin = require('imagemin'),
+    zipper = require('zip-local'),
     path = require('path'),
 
     Build = function () {
@@ -173,7 +174,11 @@ Build.prototype.createAndCopy = function (cb) {
                             return cb(rErr);
                         }
 
-                        cb();
+                        zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
+                            zipped.compress();
+                            zipped.save(path.normalize(self.path + '.zip'));
+                            cb();
+                        });
                     });
                 });
         } else {

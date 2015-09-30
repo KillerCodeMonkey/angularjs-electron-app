@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "main.js",
   "dependencies": {
+    "almond": "~0.3.1",
     "angular": "~1.4.5",
     "angular-local-storage": "~0.2.2",
     "angular-ui-bootstrap": "~0.13.3",
@@ -14,7 +15,6 @@
     "metismenu": "~2.1.0",
     "ng-annotate": "1.0.2",
     "ng-loading-overlay": "1.1.0",
-    "requirejs": "~2.1.20",
-    "almond": "~0.3.1"
+    "requirejs": "~2.1.20"
   }
 }
