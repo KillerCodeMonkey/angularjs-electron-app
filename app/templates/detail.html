@@ -16,9 +16,9 @@
                                         {{dict.backend}}
                                     </label>
                                 </div>
-                                <div class="radio disabled">
+                                <div class="radio">
                                     <label>
-                                        <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
+                                        <input type="radio" name="type" ng-model="form.build.type" value="webapp">
                                         {{dict.webapp}}
                                     </label>
                                 </div>
@@ -85,7 +85,7 @@
                                 <textarea class="form-control" ng-model="form.build.settings" rows="10" style="width: 535px; resize: vertical;"></textarea>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" ng-if="form.build.type === 'app'">
                             <div class="form-group col-xs-6">
                                 <label for="type">{{dict.appName}}</label>
                                 <div class="form-group">

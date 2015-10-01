@@ -7,7 +7,7 @@ var remote = require('remote'),
     zipper = require('zip-local'),
     path = require('path'),
     Promise = require('bluebird'),
-
+    // Build class
     Build = function () {
         'use strict';
 
@@ -18,7 +18,7 @@ var remote = require('remote'),
         this.cloned = false;
         this.checkedOut = false;
     };
-
+// optimize images
 function optiImage(basePath, src, dest) {
     'use strict';
     var ImageMin = new Imagemin();
@@ -38,7 +38,7 @@ function optiImage(basePath, src, dest) {
             });
     });
 }
-
+// clean up index.html
 function clearIndex(basePath) {
     'use strict';
     return new Promise(function (resolve, reject) {
@@ -48,11 +48,12 @@ function clearIndex(basePath) {
             if (readErr) {
                 return reject(readErr);
             }
-            // change index.html
+            // remove requirejs-config, requirejs
             indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
             indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
+            // replace boot.js with bundle
             indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
-
+            // write index.html to build
             fs.writeFile(basePath + '/build/index.html', indexContent, function (writeErr) {
                 if (writeErr) {
                     return reject(writeErr);
@@ -62,7 +63,7 @@ function clearIndex(basePath) {
         });
     });
 }
-
+// create and change config.xml
 function createConfig(basePath, name, version) {
     'use strict';
     return new Promise(function (resolve, reject) {
@@ -72,11 +73,12 @@ function createConfig(basePath, name, version) {
             if (readErr) {
                 return reject(readErr);
             }
-            // change config.xml
+            // set app Name
             configContent = configContent.replace(/\<name\>[^\<]*\<\/name\>/, '<name>' + name + '</name>');
+            // set app version
             configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionCode="' + version + '"$2>');
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
-
+            // write new config.xml to build folder
             fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
                 if (writeErr) {
                     return reject(writeErr);
@@ -87,6 +89,7 @@ function createConfig(basePath, name, version) {
     });
 }
 
+// run r-command for optimization
 function uglifyMinify(basePath) {
     'use strict';
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
@@ -100,14 +103,16 @@ function uglifyMinify(basePath) {
         });
     });
 }
-
+// create app.build.js --> config for r.js optimizing
 function createAppBuildConfig(basePath, includePaths) {
     'use strict';
     var appBuildConfig = basePath + '/app.build.js',
         pathString;
 
+    // build string with additional files
     includePaths.forEach(function (includePath) {
         includePath = includePath.replace(basePath + '/app/', '');
+        includePath = includePath.replace(/\.js$/, '');
         if (includePath) {
             if (pathString) {
                 pathString += ', ';
@@ -119,6 +124,7 @@ function createAppBuildConfig(basePath, includePaths) {
     });
 
     return new Promise(function (resolve, reject) {
+        // no additional stuff --> write app.build.js
         if (!pathString) {
             return fs.copy('./app.build.js', appBuildConfig, function (writeErr) {
                 if (writeErr) {
@@ -127,14 +133,16 @@ function createAppBuildConfig(basePath, includePaths) {
                 resolve();
             });
         }
+        // read default app.build.js
         fs.readFile('./app.build.js', {
             encoding: 'utf8'
         }, function (readErr, configContent) {
             if (readErr) {
                 return reject(readErr);
             }
+            // extend include with additional sources
             configContent = configContent.replace(/include\s*:\s*\[([^\]]*)\]/, 'include: [$1, ' + pathString + ']');
-
+            // write new file
             fs.writeFile(appBuildConfig, configContent, function (writeErr) {
                 if (writeErr) {
                     return reject(writeErr);
@@ -156,10 +164,10 @@ function copy(src, dest) {
         });
     });
 }
-
+// copy necessary files to build folder and add almond to project
 function copyFiles(basePath) {
     'use strict';
-    var sources = ['app/templates'],
+    var sources = ['app/templates', 'resources'],
         i = 0,
         almond = './node_modules/almond/almond.js',
         tasks = [];
@@ -179,7 +187,7 @@ Build.prototype.chooseFolder = function (cb) {
     'use strict';
 
     var self = this;
-
+    // show dialog window
     dialog.showOpenDialog({
         properties: ['openDirectory']
     }, function (paths) {
@@ -195,7 +203,7 @@ Build.prototype.chooseIncludeFiles = function (cb) {
     'use strict';
 
     var self = this;
-
+    // show dialog window
     dialog.showOpenDialog({
         properties: ['openFile', 'multiSelections']
     }, function (paths) {
@@ -260,7 +268,7 @@ Build.prototype.checkoutBranch = function (branch, cb) {
             exec('cd ' + self.path + ' && git checkout -b ' + self.branch + '_build' + ' origin/' + self.branch, function (checkoutErr) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
-
+                    // read settings.js
                     fs.readFile(self.path + '/app/settings.js', function (readErr, content) {
                         cb(null, content);
                     });
@@ -289,12 +297,13 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (name, version, settingsContent, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, cb) {
     'use strict';
 
-    var self = this;
+    var self = this,
+        tasks = [];
 
-    if (!name || !version) {
+    if (!type || (type === 'app' && !(name && version))) {
         return cb();
     }
     self.appName = name;
@@ -309,16 +318,21 @@ Build.prototype.build = function (name, version, settingsContent, cb) {
             return cb(dirErr);
         }
         fs.writeFile(self.path + '/app/settings.js', settingsContent, function () {
-            Promise.all([
+            tasks = [
                 copyFiles(self.path).then(function () {
                     return createAppBuildConfig(self.path, self.includePaths);
                 }).then(function () {
                     return uglifyMinify(self.path);
                 }),
-                optiImage(self.path, '/resources', '/build/resources'),
-                clearIndex(self.path),
-                createConfig(self.path, self.appName, self.appVersion)
-            ]).then(function () {
+                optiImage(self.path, '/build/resources', '/build/resources'),
+                clearIndex(self.path)
+            ];
+
+            if (type === 'app') {
+                tasks.push(createConfig(self.path, self.appName, self.appVersion));
+            }
+
+            Promise.all(tasks).then(function () {
                 zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
                     zipped.compress();
                     zipped.save(path.normalize(self.path + '.zip'));
