@@ -156,18 +156,23 @@ function createAppBuildConfig(basePath, includePaths) {
 function copy(src, dest) {
     'use strict';
     return new Promise(function (resolve, reject) {
-        fs.copy(src, dest, function (err) {
-            if (err) {
-                return reject(err);
+        fs.stat(src, function (statErr) {
+            if (statErr) {
+                return resolve();
             }
-            resolve();
+            fs.copy(src, dest, function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
         });
     });
 }
 // copy necessary files to build folder and add almond to project
 function copyFiles(basePath) {
     'use strict';
-    var sources = ['app/templates', 'resources'],
+    var sources = ['app/templates', 'resources', 'docker-compose.yml'],
         i = 0,
         almond = './node_modules/almond/almond.js',
         tasks = [];
