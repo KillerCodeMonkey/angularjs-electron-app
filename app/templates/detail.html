@@ -4,90 +4,110 @@
 <div class="modal-body">
     <loading-spinner loading="isLoading">
         <form id="buildForm" name="form.buildForm">
-            <fieldset ng-disabled="checkedOut">
-                <div class="row">
-                    <div class="form-group col-xs-6">
-                        <label for="type">{{dict.type}}</label>
-                        <div class="radio disabled">
-                            <label>
-                                <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
-                                {{dict.backend}}
-                            </label>
-                        </div>
-                        <div class="radio disabled">
-                            <label>
-                                <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
-                                {{dict.webapp}}
-                            </label>
-                        </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="type" ng-model="form.build.type" value="app">
-                                {{dict.app}}
-                            </label>
-                        </div>
-                    </div>
-                    <div class="form-group col-xs-6">
-                        <label for="type">{{dict.gitlabLogin}}</label>
-                        <div class="form-group">
-                            <div class="input-group">
-                                <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
-                                <input class="form-control" ng-model="form.build.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+            <accordion close-others="true">
+                <accordion-group heading="CHECKOUT" is-open="!checkedOut">
+                    <fieldset ng-disabled="checkedOut">
+                        <div class="row">
+                            <div class="form-group col-xs-6">
+                                <label for="type">{{dict.type}}</label>
+                                <div class="radio disabled">
+                                    <label>
+                                        <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
+                                        {{dict.backend}}
+                                    </label>
+                                </div>
+                                <div class="radio disabled">
+                                    <label>
+                                        <input type="radio" name="type" ng-model="form.build.type" value="webapp" disabled>
+                                        {{dict.webapp}}
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="type" ng-model="form.build.type" value="app">
+                                        {{dict.app}}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label for="type">{{dict.gitlabLogin}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-unlock-alt input-icon"></i></span>
+                                        <input class="form-control" ng-model="form.build.password" placeholder="{{dict.password}}" name="password" type="password" value="" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="clearfix"></div>
-                <div class="form-group">
-                    <label for="branch">{{dict.branch}}</label>
-                    <div class="input-group" ng-click="!checkedOut && chooseDestination()">
-                        <span class="input-group-addon"><i class="fa fa-code-fork input-icon"></i></span>
-                        <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
-                            <option value="">{{dict.selectBranch}}</option>
-                        </select>
-                    </div>
-                 </div>
-                <div class="form-group">
-                    <label for="branch">{{dict.destination}}</label><br>
-                    <div class="input-group" ng-click="!checkedOut && chooseDestination()">
-                        <span class="input-group-addon"><i class="fa fa-folder-open input-icon"></i></span>
-                        <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="" required>
-                    </div>
-                </div>
-            </fieldset>
-            <fieldset ng-if="checkedOut" ng-disabled="success">
-                <div class="form-group">
-                    <label>{{dict.includeFiles}}</label><br>
-                    <div class="input-group" ng-click="!success && checkedOut && chooseIncludeFiles()">
-                        <span class="input-group-addon"><i class="fa fa-files-o input-icon"></i></span>
-                        <input type="text" class="form-control" placeholder="{{dict.chooseDestination}}" readonly="">
-                    </div>
-                    <div class="input-group list" ng-repeat="file in form.build.includeFiles">
-                        <input type="text" class="form-control" disabled="" value="{{file}}" readonly="">
-                        <span class="input-group-addon" ng-click="!success && removeIncludeFile($index)"><i class="fa fa-trash-o input-icon"></i></span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group col-xs-6">
-                        <label for="type">{{dict.appName}}</label>
-                        <div class="form-group">
-                            <div class="input-group">
-                                <span class="input-group-addon"><i class="fa fa-font input-icon"></i></span>
-                                <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" value="" required>
+                        <div class="row">
+                            <div class="form-group col-xs-6">
+                                <label for="branch">{{dict.branch}}</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-code-fork input-icon"></i></span>
+                                    <select name="branch" ng-model="form.build.branch" ng-options="branch.name as branch.name for branch in project.branches" class="form-control" required>
+                                        <option value="">{{dict.selectBranch}}</option>
+                                    </select>
+                                </div>
+                             </div>
+                            <div class="form-group col-xs-6">
+                                <label for="branch">{{dict.destination}}</label><br>
+                                <div class="input-group" ng-click="!checkedOut && chooseDestination()">
+                                    <span class="input-group-addon"><i class="fa fa-folder-open input-icon"></i></span>
+                                    <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="" required>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group col-xs-6">
-                        <label for="type">{{dict.appVersion}}</label>
+                        <div class="clearfix"></div>
+                    </fieldset>
+                </accordion-group>
+                <accordion-group heading="BUILD" ng-if="checkedOut" is-open="checkedOut">
+                    <fieldset ng-disabled="success">
                         <div class="form-group">
-                            <div class="input-group">
-                                <span class="input-group-addon"><i class="fa fa-tag input-icon"></i></span>
-                                <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" value="" required>
+                            <label>{{dict.includeFiles}}</label><br>
+                            <div class="input-group" ng-click="!success && checkedOut && chooseIncludeFiles()">
+                                <span class="input-group-addon"><i class="fa fa-files-o input-icon"></i></span>
+                                <input type="text" class="form-control" placeholder="{{dict.chooseDestination}}" readonly="">
+                                <span class="input-group-addon"
+                                    tooltip="{{dict.includeFilesHint}}"
+                                    tooltip-placement="top"
+                                    tooltip-trigger="mouseenter">
+                                    <i class="fa fa-question input-icon"></i>
+                                </span>
+                            </div>
+                            <div class="input-group list" ng-repeat="file in form.build.includeFiles">
+                                <input type="text" class="form-control" disabled="" value="{{file}}" readonly="">
+                                <span class="input-group-addon" ng-click="!success && removeIncludeFile($index)"><i class="fa fa-trash-o input-icon"></i></span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </fieldset>
+                        <div class="form-group">
+                            <label>{{dict.settings}}</label>
+                            <div class="input-group">
+                                <textarea class="form-control" ng-model="form.build.settings" rows="10" style="width: 535px; resize: vertical;"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-xs-6">
+                                <label for="type">{{dict.appName}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-font input-icon"></i></span>
+                                        <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" value="" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label for="type">{{dict.appVersion}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-tag input-icon"></i></span>
+                                        <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" value="" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </accordion-group>
+            </accordion>
         </form>
     </loading-spinner>
 </div>

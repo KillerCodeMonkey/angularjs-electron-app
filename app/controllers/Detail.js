@@ -77,7 +77,7 @@ define([
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr) {
+                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, settingsContent) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {
@@ -87,6 +87,7 @@ define([
                         } else {
                             $timeout(function () {
                                 $scope.checkedOut = true;
+                                $scope.form.build.settings = settingsContent;
                                 $loadingOverlay.hide();
                             });
                         }
@@ -95,7 +96,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.appName, $scope.form.build.appVersion, function (someError, zipPath) {
+                buildObject.build($scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, function (someError, zipPath) {
                     if (someError) {
                         $timeout(function () {
                             $loadingOverlay.hide();

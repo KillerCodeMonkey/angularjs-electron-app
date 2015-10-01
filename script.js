@@ -260,10 +260,14 @@ Build.prototype.checkoutBranch = function (branch, cb) {
             exec('cd ' + self.path + ' && git checkout -b ' + self.branch + '_build' + ' origin/' + self.branch, function (checkoutErr) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
+
+                    fs.readFile(self.path + '/app/settings.js', function (readErr, content) {
+                        cb(null, content);
+                    });
                 } else {
                     self.checkedOut = false;
+                    cb(checkoutErr);
                 }
-                cb(checkoutErr);
             });
         } else {
             cb('no git');
@@ -285,7 +289,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (name, version, cb) {
+Build.prototype.build = function (name, version, settingsContent, cb) {
     'use strict';
 
     var self = this;
@@ -304,24 +308,26 @@ Build.prototype.build = function (name, version, cb) {
         if (dirErr) {
             return cb(dirErr);
         }
-        Promise.all([
-            copyFiles(self.path).then(function () {
-                return createAppBuildConfig(self.path, self.includePaths);
-            }).then(function () {
-                return uglifyMinify(self.path);
-            }),
-            optiImage(self.path, '/resources', '/build/resources'),
-            clearIndex(self.path),
-            createConfig(self.path, self.appName, self.appVersion)
-        ]).then(function () {
-            zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
-                zipped.compress();
-                zipped.save(path.normalize(self.path + '.zip'));
-                fs.remove(self.path, function () {
-                    self.package = path.normalize(self.path + '.zip');
-                    cb(null, path.normalize(self.path + '.zip'));
+        fs.writeFile(self.path + '/app/settings.js', settingsContent, function () {
+            Promise.all([
+                copyFiles(self.path).then(function () {
+                    return createAppBuildConfig(self.path, self.includePaths);
+                }).then(function () {
+                    return uglifyMinify(self.path);
+                }),
+                optiImage(self.path, '/resources', '/build/resources'),
+                clearIndex(self.path),
+                createConfig(self.path, self.appName, self.appVersion)
+            ]).then(function () {
+                zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
+                    zipped.compress();
+                    zipped.save(path.normalize(self.path + '.zip'));
+                    fs.remove(self.path, function () {
+                        self.package = path.normalize(self.path + '.zip');
+                        cb(null, path.normalize(self.path + '.zip'));
+                    });
                 });
-            });
-        }, cb);
+            }, cb);
+        });
     });
 };
