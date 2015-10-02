@@ -16,6 +16,7 @@
     "metismenu": "~2.1.0",
     "ng-annotate": "1.0.2",
     "ng-loading-overlay": "1.1.0",
-    "requirejs": "~2.1.20"
+    "requirejs": "~2.1.20",
+    "zip-local": "^0.1.3"
   }
 }

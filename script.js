@@ -111,7 +111,7 @@ function createAppBuildConfig(basePath, includePaths) {
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
-        includePath = includePath.replace(basePath + '/app/', '');
+        includePath = includePath.replace(path.normalize(basePath + '/app/', ''));
         includePath = includePath.replace(/\.js$/, '');
         if (includePath) {
             if (pathString) {
@@ -318,18 +318,20 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
         return cb();
     }
 
-    fs.mkdirs(this.path + '/build', function (dirErr) {
+    fs.mkdirs(this.path + '/build/app', function (dirErr) {
         if (dirErr) {
             return cb(dirErr);
         }
         fs.writeFile(self.path + '/app/settings.js', settingsContent, function () {
             tasks = [
                 copyFiles(self.path).then(function () {
-                    return createAppBuildConfig(self.path, self.includePaths);
+                    return Promise.all([
+                        optiImage(self.path, '/build/resources', '/build/resources'),
+                        createAppBuildConfig(self.path, self.includePaths)
+                    ]);
                 }).then(function () {
                     return uglifyMinify(self.path);
                 }),
-                optiImage(self.path, '/build/resources', '/build/resources'),
                 clearIndex(self.path)
             ];
 

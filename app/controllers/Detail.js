@@ -98,6 +98,7 @@ define([
                 $loadingOverlay.show();
                 buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, function (someError, zipPath) {
                     if (someError) {
+                        console.log(someError);
                         $timeout(function () {
                             $loadingOverlay.hide();
                         });
