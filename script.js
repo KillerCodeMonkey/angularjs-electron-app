@@ -111,7 +111,7 @@ function createAppBuildConfig(basePath, includePaths) {
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
-        includePath = includePath.replace(path.normalize(basePath + '/app/', ''));
+        includePath = includePath.replace(path.normalize(basePath + '/app/'), '');
         includePath = includePath.replace(/\.js$/, '');
         if (includePath) {
             if (pathString) {
