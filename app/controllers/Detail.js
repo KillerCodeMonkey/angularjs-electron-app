@@ -96,7 +96,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, function (someError, zipPath) {
+                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.buildType, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);
                         $timeout(function () {

@@ -302,10 +302,11 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, buildType, cb) {
     'use strict';
 
     var self = this,
+        additionalPath = '',
         tasks = [];
 
     if (!type || (type === 'app' && !(name && version))) {
@@ -317,8 +318,10 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
     if (!this.path || !this.cloned || !this.checkedOut) {
         return cb();
     }
-
-    fs.mkdirs(this.path + '/build/app', function (dirErr) {
+    if (buildType && buildType === 'cli') {
+        additionalPath = '/www';
+    }
+    fs.mkdirs(this.path + additionalPath + '/build/app', function (dirErr) {
         if (dirErr) {
             return cb(dirErr);
         }
