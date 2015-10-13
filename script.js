@@ -274,14 +274,13 @@ Build.prototype.checkoutBranch = function (branch, cb) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
                     // read settings.js
-                    Promise.all([fs.readFileAsync(self.path + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+                    Promise.settle([fs.readFileAsync(self.path + '/app/settings.js'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
                         self.checkedOut = true;
+
                         cb(null, {
-                            settings: results[0],
-                            build: JSON.parse(results[1])
+                            settings: results[0].isRejected() ? '' : results[0].value(),
+                            build: results[1].isRejected() ? {} : JSON.parse(results[1].value())
                         });
-                    }, function (readErr) {
-                        cb(readErr);
                     });
                 } else {
                     self.checkedOut = false;
