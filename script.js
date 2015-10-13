@@ -2,11 +2,11 @@
 var remote = require('remote'),
     dialog = remote.require('dialog'),
     exec = require('child_process').exec,
-    fs = require('fs-extra'),
+    Promise = require('bluebird'),
+    fs = Promise.promisifyAll(require('fs-extra')),
     Imagemin = require('imagemin'),
     zipper = require('zip-local'),
     path = require('path'),
-    Promise = require('bluebird'),
     // Build class
     Build = function () {
         'use strict';
@@ -274,8 +274,14 @@ Build.prototype.checkoutBranch = function (branch, cb) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
                     // read settings.js
-                    fs.readFile(self.path + '/app/settings.js', function (readErr, content) {
-                        cb(null, content);
+                    Promise.all([fs.readFileAsync(self.path + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+                        self.checkedOut = true;
+                        cb(null, {
+                            settings: results[0],
+                            build: JSON.parse(results[1])
+                        });
+                    }, function (readErr) {
+                        cb(readErr);
                     });
                 } else {
                     self.checkedOut = false;

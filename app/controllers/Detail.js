@@ -77,7 +77,7 @@ define([
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, settingsContent) {
+                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, fileContents) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {
@@ -87,7 +87,9 @@ define([
                         } else {
                             $timeout(function () {
                                 $scope.checkedOut = true;
-                                $scope.form.build.settings = settingsContent;
+                                $scope.form.build.settings = fileContents.settings;
+                                $scope.form.build.config = fileContents.build;
+
                                 $loadingOverlay.hide();
                             });
                         }
