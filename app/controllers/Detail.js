@@ -98,7 +98,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, function (someError, zipPath) {
+                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.host, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);
                         $timeout(function () {
@@ -120,6 +120,12 @@ define([
                 } else {
                     checkout();
                 }
+            };
+
+            $scope.changeHost = function () {
+                console.log('Arschmann');
+                $scope.form.build.settings = $scope.form.build.settings.replace(/host\s*:\s*[^\n]*/g, '');
+                $scope.form.build.settings = $scope.form.build.settings.replace('define({', 'define({\n    host: \'' + $scope.form.build.host + '\',');
             };
         }
     ]);

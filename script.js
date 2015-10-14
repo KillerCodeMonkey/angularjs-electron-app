@@ -274,7 +274,7 @@ Build.prototype.checkoutBranch = function (branch, cb) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
                     // read settings.js
-                    Promise.settle([fs.readFileAsync(self.path + '/app/settings.js'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+                    Promise.settle([fs.readFileAsync(self.path + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
                         self.checkedOut = true;
 
                         cb(null, {
@@ -307,7 +307,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, host, cb) {
     'use strict';
 
     var self = this,
@@ -318,6 +318,7 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
     }
     self.appName = name;
     self.appVersion = version;
+    self.host = host;
 
     if (!this.path || !this.cloned || !this.checkedOut) {
         return cb();

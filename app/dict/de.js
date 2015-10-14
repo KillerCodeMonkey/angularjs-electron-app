@@ -25,5 +25,7 @@ define({
     'name': 'Name',
     'version': 'Version',
     'includeFiles': 'Zusätzliche Dateien hinzufügen (z.B. Übersetzungen)',
-    'includeFilesHint': 'Alle Dateien des Projekts, die nicht in einer JavaScript-Datei über define geladen, aber benötigt werden, z.B. Übersetzungsdateien.'
+    'includeFilesHint': 'Alle Dateien des Projekts, die nicht in einer JavaScript-Datei über define geladen, aber benötigt werden, z.B. Übersetzungsdateien.',
+    'host': 'Host',
+    'pleaseChoose': 'Bitte auswählen'
 });
