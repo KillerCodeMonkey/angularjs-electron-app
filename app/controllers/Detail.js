@@ -107,7 +107,6 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                console.log($scope.form.build);
                 buildObject.build($scope.form.build.type, $scope.form.build.config.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.host, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);

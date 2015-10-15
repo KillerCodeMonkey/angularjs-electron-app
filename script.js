@@ -19,6 +19,16 @@ var remote = require('remote'),
         this.cloned = false;
         this.checkedOut = false;
     };
+
+// create date string
+function getDate() {
+    'use strict';
+    var now = new Date();
+    var todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()));
+
+    return todayUTC.toISOString().slice(0, 10).replace(/-/g, '-') + 'T' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+}
+
 // optimize images
 function optiImage(basePath, src, dest) {
     'use strict';
@@ -40,7 +50,7 @@ function optiImage(basePath, src, dest) {
     });
 }
 // clean up index.html
-function clearIndex(basePath) {
+function clearIndex(basePath, appVersion) {
     'use strict';
     return new Promise(function (resolve, reject) {
         fs.readFile(basePath + '/index.html', {
@@ -51,7 +61,8 @@ function clearIndex(basePath) {
             }
             // remove requirejs-config, requirejs
             indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
-            indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
+            appVersion = appVersion ? '\n<script>window.appVersion = "' + appVersion + '";</script>' : '';
+            indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', appVersion);
             // replace boot.js with bundle
             indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
             // write index.html to build
@@ -127,12 +138,14 @@ function uglifyMinify(basePath) {
         });
     });
 }
+
 // create app.build.js --> config for r.js optimizing
 function createAppBuildConfig(basePath, includePaths) {
     'use strict';
     var appBuildConfig = basePath + '/app.build.js',
         pathString;
 
+    // include the predefined dicts folder
     readFiles(basePath + '/app/dicts', includePaths);
 
     // build string with additional files
@@ -265,7 +278,7 @@ Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
 
     exec('git --version', function (err, stdout) {
         if (stdout.match(/git version/g)) {
-            exec('cd ' + self.path + ' && git clone ' + self.repoUrl, function (cloneErr) {
+            exec('cd ' + self.path + ' && git clone --depth 1 ' + self.repoUrl, function (cloneErr) {
                 if (!cloneErr) {
                     self.cloned = true;
                     self.path += '/' + self.name;
@@ -365,7 +378,7 @@ Build.prototype.build = function (type, name, version, settingsContent, host, cb
                 }).then(function () {
                     return uglifyMinify(self.path);
                 }),
-                clearIndex(self.path)
+                clearIndex(self.path, version)
             ];
 
             if (type === 'app') {
@@ -375,10 +388,11 @@ Build.prototype.build = function (type, name, version, settingsContent, host, cb
             Promise.all(tasks).then(function () {
                 zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
                     zipped.compress();
-                    zipped.save(path.normalize(self.path + '.zip'));
+                    var finalpath = self.path + '_' + getDate() + '.zip';
+                    zipped.save(path.normalize(finalpath));
                     fs.remove(self.path, function () {
-                        self.package = path.normalize(self.path + '.zip');
-                        cb(null, path.normalize(self.path + '.zip'));
+                        self.package = path.normalize(finalpath);
+                        cb(null, path.normalize(finalpath));
                     });
                 });
             }, cb);
