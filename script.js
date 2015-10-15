@@ -7,6 +7,7 @@ var remote = require('remote'),
     Imagemin = require('imagemin'),
     zipper = require('zip-local'),
     path = require('path'),
+    minify = require('html-minifier').minify,
 
     // Build class
     Build = function () {
@@ -27,6 +28,76 @@ function getDate() {
     var todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()));
 
     return todayUTC.toISOString().slice(0, 10).replace(/-/g, '-') + 'T' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+}
+
+function readFiles(currentPath, target) {
+    'use strict';
+
+    if (!currentPath || !target) {
+        return;
+    }
+    var files = fs.readdirSync(currentPath),
+        currentFile,
+        stats;
+
+    for (var i in files) {
+        currentFile = currentPath + '/' + files[i];
+        stats = fs.statSync(currentFile);
+        if (stats.isFile()) {
+            target.push(currentFile);
+        }
+        else if (stats.isDirectory()) {
+            readFiles(currentFile, target);
+        }
+    }
+}
+
+function transformTemplate(basePath, templatePath) {
+    'use strict';
+    var templateContent,
+        relativePath = templatePath.replace(basePath + '/', '');
+
+    return new Promise(function (resolve, reject) {
+        fs.readFile(templatePath, function (err, content) {
+            if (err) {
+                return reject(err);
+            }
+
+            templateContent = '<script type="text/ng-template" id="' + relativePath + '">\n' + content + '\n</script>';
+
+            resolve(templateContent);
+        });
+    });
+}
+
+// concat all templates to on
+function concatTemplates(basePath) {
+    'use strict';
+    var templates = [],
+        tasks = [],
+        i = 0,
+        concatedContent = '';
+
+    return new Promise(function (resolve, reject) {
+        if (!basePath) {
+            return reject('missing_basepath');
+        }
+        fs.stat(basePath, function (statErr) {
+            if (statErr) {
+                return reject();
+            }
+            readFiles(basePath + '/app/templates', templates);
+
+            for (i; i < templates.length; i = i + 1) {
+                tasks.push(transformTemplate(basePath, templates[i]));
+            }
+
+            Promise.all(tasks).then(function (contents) {
+                concatedContent = contents.join('\n');
+                resolve(concatedContent);
+            }, reject);
+        });
+    });
 }
 
 // optimize images
@@ -65,12 +136,19 @@ function clearIndex(basePath, appVersion) {
             indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', appVersion);
             // replace boot.js with bundle
             indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
-            // write index.html to build
-            fs.writeFile(basePath + '/build/index.html', indexContent, function (writeErr) {
-                if (writeErr) {
-                    return reject(writeErr);
-                }
-                resolve();
+            concatTemplates(basePath).then(function (concatedTemplates) {
+                indexContent = indexContent.replace('</body>', concatedTemplates + '\n</body>');
+                var minifiedIndex = minify(indexContent, {
+                    removeComments: true,
+                    collapseWhitespace: true
+                });
+                // write index.html to build
+                fs.writeFile(basePath + '/build/index.html', minifiedIndex), function (writeErr) {
+                    if (writeErr) {
+                        return reject(writeErr);
+                    }
+                    resolve();
+                });
             });
         });
     });
@@ -88,7 +166,7 @@ function createConfig(basePath, name, version) {
             // set app Name
             configContent = configContent.replace(/\<name\>[^\<]*\<\/name\>/, '<name>' + name + '</name>');
             // set app version
-            configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionCode="' + version + '"$2>');
+            configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
             // write new config.xml to build folder
             fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
@@ -99,28 +177,6 @@ function createConfig(basePath, name, version) {
             });
         });
     });
-}
-
-function readFiles(currentPath, target) {
-    'use strict';
-
-    if (!currentPath || !target) {
-        return;
-    }
-    var files = fs.readdirSync(currentPath),
-        currentFile,
-        stats;
-
-    for (var i in files) {
-        currentFile = currentPath + '/' + files[i];
-        stats = fs.statSync(currentFile);
-        if (stats.isFile()) {
-            target.push(currentFile);
-        }
-        else if (stats.isDirectory()) {
-            readFiles(currentFile, target);
-        }
-    }
 }
 
 // run r-command for optimization
@@ -212,7 +268,7 @@ function copy(src, dest) {
 // copy necessary files to build folder and add almond to project
 function copyFiles(basePath) {
     'use strict';
-    var sources = ['app/templates', 'resources', 'docker-compose.yml'],
+    var sources = ['resources', 'docker-compose.yml'],
         i = 0,
         almond = './node_modules/almond/almond.js',
         tasks = [];
