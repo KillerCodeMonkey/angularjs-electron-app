@@ -7,6 +7,7 @@ var remote = require('remote'),
     Imagemin = require('imagemin'),
     zipper = require('zip-local'),
     path = require('path'),
+
     // Build class
     Build = function () {
         'use strict';
@@ -89,9 +90,32 @@ function createConfig(basePath, name, version) {
     });
 }
 
+function readFiles(currentPath, target) {
+    'use strict';
+
+    if (!currentPath || !target) {
+        return;
+    }
+    var files = fs.readdirSync(currentPath),
+        currentFile,
+        stats;
+
+    for (var i in files) {
+        currentFile = currentPath + '/' + files[i];
+        stats = fs.statSync(currentFile);
+        if (stats.isFile()) {
+            target.push(currentFile);
+        }
+        else if (stats.isDirectory()) {
+            readFiles(currentFile, target);
+        }
+    }
+}
+
 // run r-command for optimization
 function uglifyMinify(basePath) {
     'use strict';
+
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
 
     return new Promise(function (resolve, reject) {
@@ -108,6 +132,8 @@ function createAppBuildConfig(basePath, includePaths) {
     'use strict';
     var appBuildConfig = basePath + '/app.build.js',
         pathString;
+
+    readFiles(basePath + '/app/dicts', includePaths);
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
@@ -169,6 +195,7 @@ function copy(src, dest) {
         });
     });
 }
+
 // copy necessary files to build folder and add almond to project
 function copyFiles(basePath) {
     'use strict';
