@@ -71,7 +71,7 @@ function transformTemplate(basePath, templatePath) {
 }
 
 // concat all templates to on
-function concatTemplates(basePath) {
+function concatTemplates(basePath, additionalPath) {
     'use strict';
     var templates = [],
         tasks = [],
@@ -82,11 +82,11 @@ function concatTemplates(basePath) {
         if (!basePath) {
             return reject('missing_basepath');
         }
-        fs.stat(basePath, function (statErr) {
+        fs.stat(basePath + additionalPath, function (statErr) {
             if (statErr) {
                 return reject();
             }
-            readFiles(basePath + '/app/templates', templates);
+            readFiles(basePath + additionalPath + '/app/templates', templates);
 
             for (i; i < templates.length; i = i + 1) {
                 tasks.push(transformTemplate(basePath, templates[i]));
@@ -101,7 +101,7 @@ function concatTemplates(basePath) {
 }
 
 // optimize images
-function optiImage(basePath, src, dest) {
+function optiImage(basePath, src, dest, additionalPath) {
     'use strict';
     var ImageMin = new Imagemin();
 
@@ -110,8 +110,8 @@ function optiImage(basePath, src, dest) {
             .use(Imagemin.gifsicle({interlaced: true}))
             .use(Imagemin.jpegtran({progressive: true}))
             .use(Imagemin.optipng({optimizationLevel: 3}))
-            .src(basePath + path.normalize(src + '/**/*.{gif,jpg,png,svg}'))
-            .dest(basePath + path.normalize(dest))
+            .src(basePath + additionalPath + path.normalize(src + '/**/*.{gif,jpg,png,svg}'))
+            .dest(basePath + additionalPath + path.normalize(dest))
             .run(function (err) {
                 if (err) {
                     return reject(err);
@@ -121,10 +121,10 @@ function optiImage(basePath, src, dest) {
     });
 }
 // clean up index.html
-function clearIndex(basePath, appVersion) {
+function clearIndex(basePath, appVersion, additionalPath) {
     'use strict';
     return new Promise(function (resolve, reject) {
-        fs.readFile(basePath + '/index.html', {
+        fs.readFile(basePath + additionalPath + '/index.html', {
             encoding: 'utf8'
         }, function (readErr, indexContent) {
             if (readErr) {
@@ -136,7 +136,7 @@ function clearIndex(basePath, appVersion) {
             indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', appVersion);
             // replace boot.js with bundle
             indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
-            concatTemplates(basePath).then(function (concatedTemplates) {
+            concatTemplates(basePath, additionalPath).then(function (concatedTemplates) {
                 indexContent = indexContent.replace('</body>', concatedTemplates + '\n</body>');
                 var minifiedIndex = minify(indexContent, {
                     removeComments: true,
@@ -146,7 +146,7 @@ function clearIndex(basePath, appVersion) {
                     preserveLineBreaks: true
                 });
                 // write index.html to build
-                fs.writeFile(basePath + '/build/index.html', minifiedIndex, function (writeErr) {
+                fs.writeFile(basePath + additionalPath + '/build/index.html', minifiedIndex, function (writeErr) {
                     if (writeErr) {
                         return reject(writeErr);
                     }
@@ -157,7 +157,7 @@ function clearIndex(basePath, appVersion) {
     });
 }
 // create and change config.xml
-function createConfig(basePath, name, version) {
+function createConfig(basePath, name, version, additionalPath) {
     'use strict';
     return new Promise(function (resolve, reject) {
         fs.readFile(basePath + '/config.xml', {
@@ -179,7 +179,7 @@ function createConfig(basePath, name, version) {
             }
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
             // write new config.xml to build folder
-            fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
+            fs.writeFile(basePath + (additionalPath ? '' : '/build') + '/config.xml', configContent, function (writeErr) {
                 if (writeErr) {
                     return reject(writeErr);
                 }
@@ -190,13 +190,13 @@ function createConfig(basePath, name, version) {
 }
 
 // run r-command for optimization
-function uglifyMinify(basePath) {
+function uglifyMinify(basePath, additionalPath) {
     'use strict';
 
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
 
     return new Promise(function (resolve, reject) {
-        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr, stdOut) {
+        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + additionalPath + '/app.build.js'), function (rErr, stdOut) {
             if (rErr) {
                 return reject(stdOut);
             }
@@ -206,16 +206,16 @@ function uglifyMinify(basePath) {
 }
 
 // create app.build.js --> config for r.js optimizing
-function createAppBuildConfig(basePath, includePaths) {
+function createAppBuildConfig(basePath, includePaths, additionalPath) {
     'use strict';
-    var appBuildConfig = basePath + '/app.build.js',
+    var appBuildConfig = basePath + additionalPath + '/app.build.js',
         pathString;
     // include the predefined dicts folder
-    readFiles(basePath + '/app/dicts', includePaths);
+    readFiles(basePath + additionalPath + '/app/dicts', includePaths);
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
-        includePath = includePath.replace(basePath + '/app/', '');
+        includePath = includePath.replace(basePath + additionalPath + '/app/', '');
         includePath = includePath.replace(/\.js$/, '');
 
         if (includePath) {
@@ -239,7 +239,7 @@ function createAppBuildConfig(basePath, includePaths) {
             });
         }
         // read default app.build.js
-        fs.readFile('./app.build.js', {
+        fs.readFile(additionalPath + './app.build.js', {
             encoding: 'utf8'
         }, function (readErr, configContent) {
             if (readErr) {
@@ -276,7 +276,7 @@ function copy(src, dest) {
 }
 
 // copy necessary files to build folder and add almond to project
-function copyFiles(basePath) {
+function copyFiles(basePath, additionalPath) {
     'use strict';
     var sources = ['resources', 'docker-compose.yml'],
         i = 0,
@@ -284,9 +284,9 @@ function copyFiles(basePath) {
         tasks = [];
 
     for (i; i < sources.length; i = i + 1) {
-        tasks.push(copy(basePath + '/' + sources[i], basePath + '/build/' + sources[i]));
+        tasks.push(copy(basePath + additionalPath + '/' + sources[i], basePath + additionalPath + '/build/' + sources[i]));
     }
-    tasks.push(copy(almond, basePath + '/almond.js'));
+    tasks.push(copy(almond, basePath + additionalPath + '/almond.js'));
 
     return new Promise(function (resolve, reject) {
         Promise.all(tasks).then(resolve, reject);
@@ -413,11 +413,12 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, host, buildType, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, buildType, host, cb) {
     'use strict';
 
     var self = this,
         additionalPath = '',
+        isCLI = false,
         tasks = [];
 
     if (!type || (type === 'app' && !(name && version))) {
@@ -431,39 +432,59 @@ Build.prototype.build = function (type, name, version, settingsContent, host, bu
         return cb();
     }
     if (buildType && buildType === 'cli') {
+        isCLI = true;
         additionalPath = '/www';
     }
     fs.mkdirs(this.path + additionalPath + '/build/app', function (dirErr) {
         if (dirErr) {
             return cb(dirErr);
         }
-        fs.writeFile(self.path + '/app/settings.js', settingsContent, function () {
+        fs.writeFile(self.path + additionalPath + '/app/settings.js', settingsContent, function () {
             tasks = [
-                copyFiles(self.path).then(function () {
+                copyFiles(self.path, additionalPath).then(function () {
                     return Promise.all([
-                        optiImage(self.path, '/build/resources', '/build/resources'),
-                        createAppBuildConfig(self.path, self.includePaths)
+                        optiImage(self.path, '/build/resources', '/build/resources', additionalPath),
+                        createAppBuildConfig(self.path, self.includePaths, additionalPath)
                     ]);
                 }).then(function () {
-                    return uglifyMinify(self.path);
+                    return uglifyMinify(self.path, additionalPath);
                 }),
-                clearIndex(self.path, version)
+                clearIndex(self.path, version, additionalPath)
             ];
 
             if (type === 'app') {
-                tasks.push(createConfig(self.path, self.appName, self.appVersion));
+                tasks.push(createConfig(self.path, self.appName, self.appVersion, additionalPath));
             }
 
             Promise.all(tasks).then(function () {
-                zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
-                    zipped.compress();
-                    var finalpath = self.path + '_' + getDate() + '.zip';
-                    zipped.save(path.normalize(finalpath));
-                    fs.remove(self.path, function () {
-                        self.package = path.normalize(finalpath);
-                        cb(null, path.normalize(finalpath));
+                if (isCLI) {
+                    fs.move(this.path + additionalPath + '/build', this.path + '/build', function (moveErr) {
+                        if (moveErr) {
+                            return cb(moveErr);
+                        }
+                        fs.remove(this.path + additionalPath, function (removeErr) {
+                            if (removeErr) {
+                                return cb(removeErr);
+                            }
+                            fs.move(this.path + '/build', this.path + additionalPath, function (renameErr) {
+                                if (renameErr) {
+                                    return cb(renameErr);
+                                }
+                                cb();
+                            });
+                        });
                     });
-                });
+                } else {
+                    zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
+                        zipped.compress();
+                        var finalpath = self.path + '_' + getDate() + '.zip';
+                        zipped.save(path.normalize(finalpath));
+                        fs.remove(self.path, function () {
+                            self.package = path.normalize(finalpath);
+                            cb(null, path.normalize(finalpath));
+                        });
+                    });
+                }
             }, cb);
         });
     });
