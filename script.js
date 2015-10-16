@@ -210,13 +210,12 @@ function createAppBuildConfig(basePath, includePaths) {
     'use strict';
     var appBuildConfig = basePath + '/app.build.js',
         pathString;
-
     // include the predefined dicts folder
     readFiles(basePath + '/app/dicts', includePaths);
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
-        includePath = includePath.replace(path.normalize(basePath + '/app/'), '');
+        includePath = includePath.replace(basePath + '/app/', '');
         includePath = includePath.replace(/\.js$/, '');
 
         if (includePath) {
