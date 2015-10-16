@@ -169,7 +169,14 @@ function createConfig(basePath, name, version) {
             // set app Name
             configContent = configContent.replace(/\<name\>[^\<]*\<\/name\>/, '<name>' + name + '</name>');
             // set app version
-            configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+            if (configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && !configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+            } else if (!configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionName\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+            } else if (configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionName\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+                configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '');
+            }
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
             // write new config.xml to build folder
             fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
