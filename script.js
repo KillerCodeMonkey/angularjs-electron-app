@@ -140,10 +140,13 @@ function clearIndex(basePath, appVersion) {
                 indexContent = indexContent.replace('</body>', concatedTemplates + '\n</body>');
                 var minifiedIndex = minify(indexContent, {
                     removeComments: true,
-                    collapseWhitespace: true
+                    collapseWhitespace: true,
+                    conservativeCollapse: true,
+                    removeAttributeQuotes: true,
+                    preserveLineBreaks: true
                 });
                 // write index.html to build
-                fs.writeFile(basePath + '/build/index.html', minifiedIndex), function (writeErr) {
+                fs.writeFile(basePath + '/build/index.html', minifiedIndex, function (writeErr) {
                     if (writeErr) {
                         return reject(writeErr);
                     }
@@ -186,9 +189,9 @@ function uglifyMinify(basePath) {
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
 
     return new Promise(function (resolve, reject) {
-        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr) {
+        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr, stdOut) {
             if (rErr) {
-                return reject(rErr);
+                return reject(stdOut);
             }
             resolve();
         });
@@ -208,6 +211,7 @@ function createAppBuildConfig(basePath, includePaths) {
     includePaths.forEach(function (includePath) {
         includePath = includePath.replace(path.normalize(basePath + '/app/'), '');
         includePath = includePath.replace(/\.js$/, '');
+
         if (includePath) {
             if (pathString) {
                 pathString += ', ';
