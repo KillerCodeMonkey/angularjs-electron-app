@@ -73,11 +73,12 @@ define([
                 $loadingOverlay.show();
                 buildObject.cloneProject($scope.form.build.path, repoUrl, $scope.project.name, function (cloneErr) {
                     if (cloneErr) {
+                        console.log(cloneErr);
                         return $timeout(function () {
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, settingsContent) {
+                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, fileContents) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {
@@ -87,7 +88,17 @@ define([
                         } else {
                             $timeout(function () {
                                 $scope.checkedOut = true;
-                                $scope.form.build.settings = settingsContent;
+                                $scope.form.build.settings = fileContents.settings;
+                                $scope.form.build.config = fileContents.build;
+                                $timeout(function () {
+                                    if ($scope.form.build.config && $scope.form.build.config.appName) {
+                                        $scope.form.build.appName = $scope.form.build.config.appName;
+                                    }
+                                    if ($scope.project.tags && $scope.project.tags[0]) {
+                                        $scope.form.build.appVersion = $scope.project.tags[0].name;
+                                    }
+                                });
+
                                 $loadingOverlay.hide();
                             });
                         }
@@ -96,7 +107,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, function (someError, zipPath) {
+                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.host, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);
                         $timeout(function () {
@@ -118,6 +129,17 @@ define([
                 } else {
                     checkout();
                 }
+            };
+
+            $scope.changeHost = function () {
+                if (!$scope.form.build.host) {
+                    return;
+                }
+                if ($scope.form.build.host !== 'live') {
+                    $scope.form.build.config.appName = $scope.form.build.config.appName + '_' + $scope.form.build.host;
+                }
+                $scope.form.build.settings = $scope.form.build.settings.replace(/host\s*:\s*[^\n]*?\n/g, '');
+                $scope.form.build.settings = $scope.form.build.settings.replace('define({', 'define({\n    host: \'' + $scope.form.build.config.hosts[$scope.form.build.host] + '\',');
             };
         }
     ]);

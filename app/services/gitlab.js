@@ -97,21 +97,23 @@ define([
 
             this.getProject = function (id) {
                 var deferred = $q.defer(),
+                    baseUrl = settings.gitLab + 'projects/' + id,
                     options = {
-                        url: settings.gitLab + 'projects/' + id,
                         headers: {
                             'PRIVATE-TOKEN': localStorageService.get('privateToken')
                         },
                         method: 'get'
                     };
 
-                $http(options).then(function (project) {
-                    options.url += '/repository/branches';
-                    $http(options).then(function (branches) {
-                        var result = project.data;
-                        result.branches = branches.data;
-                        deferred.resolve(result);
-                    }, deferred.reject);
+                $q.all([
+                    $http(angular.extend({}, options, {url: baseUrl})),
+                    $http(angular.extend({}, options, {url: baseUrl + '/repository/branches'})),
+                    $http(angular.extend({}, options, {url: baseUrl + '/repository/tags'}))
+                ]).then(function (results) {
+                    var result = results[0].data;
+                    result.branches = results[1].data;
+                    result.tags = results[2].data;
+                    deferred.resolve(result);
                 }, deferred.reject);
 
                 return deferred.promise;

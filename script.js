@@ -2,11 +2,13 @@
 var remote = require('remote'),
     dialog = remote.require('dialog'),
     exec = require('child_process').exec,
-    fs = require('fs-extra'),
+    Promise = require('bluebird'),
+    fs = Promise.promisifyAll(require('fs-extra')),
     Imagemin = require('imagemin'),
     zipper = require('zip-local'),
     path = require('path'),
-    Promise = require('bluebird'),
+    minify = require('html-minifier').minify,
+
     // Build class
     Build = function () {
         'use strict';
@@ -18,6 +20,86 @@ var remote = require('remote'),
         this.cloned = false;
         this.checkedOut = false;
     };
+
+// create date string
+function getDate() {
+    'use strict';
+    var now = new Date();
+    var todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()));
+
+    return todayUTC.toISOString().slice(0, 10).replace(/-/g, '-') + 'T' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+}
+
+function readFiles(currentPath, target) {
+    'use strict';
+
+    if (!currentPath || !target) {
+        return;
+    }
+    var files = fs.readdirSync(currentPath),
+        currentFile,
+        stats;
+
+    for (var i in files) {
+        currentFile = currentPath + '/' + files[i];
+        stats = fs.statSync(currentFile);
+        if (stats.isFile()) {
+            target.push(currentFile);
+        }
+        else if (stats.isDirectory()) {
+            readFiles(currentFile, target);
+        }
+    }
+}
+
+function transformTemplate(basePath, templatePath) {
+    'use strict';
+    var templateContent,
+        relativePath = templatePath.replace(basePath + '/', '');
+
+    return new Promise(function (resolve, reject) {
+        fs.readFile(templatePath, function (err, content) {
+            if (err) {
+                return reject(err);
+            }
+
+            templateContent = '<script type="text/ng-template" id="' + relativePath + '">\n' + content + '\n</script>';
+
+            resolve(templateContent);
+        });
+    });
+}
+
+// concat all templates to on
+function concatTemplates(basePath) {
+    'use strict';
+    var templates = [],
+        tasks = [],
+        i = 0,
+        concatedContent = '';
+
+    return new Promise(function (resolve, reject) {
+        if (!basePath) {
+            return reject('missing_basepath');
+        }
+        fs.stat(basePath, function (statErr) {
+            if (statErr) {
+                return reject();
+            }
+            readFiles(basePath + '/app/templates', templates);
+
+            for (i; i < templates.length; i = i + 1) {
+                tasks.push(transformTemplate(basePath, templates[i]));
+            }
+
+            Promise.all(tasks).then(function (contents) {
+                concatedContent = contents.join('\n');
+                resolve(concatedContent);
+            }, reject);
+        });
+    });
+}
+
 // optimize images
 function optiImage(basePath, src, dest) {
     'use strict';
@@ -39,7 +121,7 @@ function optiImage(basePath, src, dest) {
     });
 }
 // clean up index.html
-function clearIndex(basePath) {
+function clearIndex(basePath, appVersion) {
     'use strict';
     return new Promise(function (resolve, reject) {
         fs.readFile(basePath + '/index.html', {
@@ -50,15 +132,26 @@ function clearIndex(basePath) {
             }
             // remove requirejs-config, requirejs
             indexContent = indexContent.replace('<script src="app/main.js"></script>', '');
-            indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', '');
+            appVersion = appVersion ? '\n<script>window.appVersion = "' + appVersion + '";</script>' : '';
+            indexContent = indexContent.replace('<script src="lib/requirejs/requirejs.min.js"></script>', appVersion);
             // replace boot.js with bundle
             indexContent = indexContent.replace('<script src="app/boot.js"></script>', '<script src="app/app.min.js" type="text/javascript"></script>');
-            // write index.html to build
-            fs.writeFile(basePath + '/build/index.html', indexContent, function (writeErr) {
-                if (writeErr) {
-                    return reject(writeErr);
-                }
-                resolve();
+            concatTemplates(basePath).then(function (concatedTemplates) {
+                indexContent = indexContent.replace('</body>', concatedTemplates + '\n</body>');
+                var minifiedIndex = minify(indexContent, {
+                    removeComments: true,
+                    collapseWhitespace: true,
+                    conservativeCollapse: true,
+                    removeAttributeQuotes: true,
+                    preserveLineBreaks: true
+                });
+                // write index.html to build
+                fs.writeFile(basePath + '/build/index.html', minifiedIndex, function (writeErr) {
+                    if (writeErr) {
+                        return reject(writeErr);
+                    }
+                    resolve();
+                });
             });
         });
     });
@@ -76,7 +169,14 @@ function createConfig(basePath, name, version) {
             // set app Name
             configContent = configContent.replace(/\<name\>[^\<]*\<\/name\>/, '<name>' + name + '</name>');
             // set app version
-            configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionCode="' + version + '"$2>');
+            if (configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && !configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+            } else if (!configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionName\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+            } else if (configContent.match(/\<widget[^\>]*versionCode\s*=\s*"[^\>"]*"[^\>]*\>/) && configContent.match(/\<widget[^\>]*versionName\s*=\s*"[^\>"]*"[^\>]*\>/)) {
+                configContent = configContent.replace(/\<widget([^\>]*)versionName\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1versionName="' + version + '"$2>');
+                configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '');
+            }
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
             // write new config.xml to build folder
             fs.writeFile(basePath + '/build/config.xml', configContent, function (writeErr) {
@@ -92,27 +192,32 @@ function createConfig(basePath, name, version) {
 // run r-command for optimization
 function uglifyMinify(basePath) {
     'use strict';
+
     var rName = process.platform === 'win32' ? 'r.js.cmd' : 'r.js';
 
     return new Promise(function (resolve, reject) {
-        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr) {
+        exec(path.normalize('node_modules/.bin/' + rName) + ' -o ' + path.normalize(basePath + '/app.build.js'), function (rErr, stdOut) {
             if (rErr) {
-                return reject(rErr);
+                return reject(stdOut);
             }
             resolve();
         });
     });
 }
+
 // create app.build.js --> config for r.js optimizing
 function createAppBuildConfig(basePath, includePaths) {
     'use strict';
     var appBuildConfig = basePath + '/app.build.js',
         pathString;
+    // include the predefined dicts folder
+    readFiles(basePath + '/app/dicts', includePaths);
 
     // build string with additional files
     includePaths.forEach(function (includePath) {
-        includePath = includePath.replace(path.normalize(basePath + '/app/'), '');
+        includePath = includePath.replace(basePath + '/app/', '');
         includePath = includePath.replace(/\.js$/, '');
+
         if (includePath) {
             if (pathString) {
                 pathString += ', ';
@@ -169,10 +274,11 @@ function copy(src, dest) {
         });
     });
 }
+
 // copy necessary files to build folder and add almond to project
 function copyFiles(basePath) {
     'use strict';
-    var sources = ['app/templates', 'resources', 'docker-compose.yml'],
+    var sources = ['resources', 'docker-compose.yml'],
         i = 0,
         almond = './node_modules/almond/almond.js',
         tasks = [];
@@ -238,7 +344,7 @@ Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
 
     exec('git --version', function (err, stdout) {
         if (stdout.match(/git version/g)) {
-            exec('cd ' + self.path + ' && git clone ' + self.repoUrl, function (cloneErr) {
+            exec('cd ' + self.path + ' && git clone --depth 1 ' + self.repoUrl, function (cloneErr) {
                 if (!cloneErr) {
                     self.cloned = true;
                     self.path += '/' + self.name;
@@ -274,8 +380,13 @@ Build.prototype.checkoutBranch = function (branch, cb) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
                     // read settings.js
-                    fs.readFile(self.path + '/app/settings.js', function (readErr, content) {
-                        cb(null, content);
+                    Promise.settle([fs.readFileAsync(self.path + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+                        self.checkedOut = true;
+
+                        cb(null, {
+                            settings: results[0].isRejected() ? '' : results[0].value(),
+                            build: results[1].isRejected() ? {} : JSON.parse(results[1].value())
+                        });
                     });
                 } else {
                     self.checkedOut = false;
@@ -302,7 +413,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, host, cb) {
     'use strict';
 
     var self = this,
@@ -313,6 +424,7 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
     }
     self.appName = name;
     self.appVersion = version;
+    self.host = host;
 
     if (!this.path || !this.cloned || !this.checkedOut) {
         return cb();
@@ -332,7 +444,7 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
                 }).then(function () {
                     return uglifyMinify(self.path);
                 }),
-                clearIndex(self.path)
+                clearIndex(self.path, version)
             ];
 
             if (type === 'app') {
@@ -342,10 +454,11 @@ Build.prototype.build = function (type, name, version, settingsContent, cb) {
             Promise.all(tasks).then(function () {
                 zipper.zip(path.normalize(self.path + '/build'), function (zipped) {
                     zipped.compress();
-                    zipped.save(path.normalize(self.path + '.zip'));
+                    var finalpath = self.path + '_' + getDate() + '.zip';
+                    zipped.save(path.normalize(finalpath));
                     fs.remove(self.path, function () {
-                        self.package = path.normalize(self.path + '.zip');
-                        cb(null, path.normalize(self.path + '.zip'));
+                        self.package = path.normalize(finalpath);
+                        cb(null, path.normalize(finalpath));
                     });
                 });
             }, cb);
