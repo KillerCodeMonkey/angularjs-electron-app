@@ -91,7 +91,7 @@
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-font input-icon"></i></span>
-                                        <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" value="" required>
+                                        <input class="form-control" ng-model="form.build.appName" placeholder="{{dict.name}}" name="appName" type="text" required>
                                     </div>
                                 </div>
                             </div>
@@ -100,7 +100,19 @@
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-tag input-icon"></i></span>
-                                        <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" value="" required>
+                                        <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-6" ng-if="form.build.config && form.build.config.hosts">
+                                <label for="host">{{dict.host}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-server input-icon"></i></span>
+                                        <select class="form-control" ng-model="form.build.host" name="host" ng-change="changeHost()" required>
+                                            <option value="" ng-click="changeHost(name)">{{dict.pleaseChoose}}</option>
+                                            <option ng-value="name" ng-repeat="(name, host) in form.build.config.hosts">{{name}}</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
