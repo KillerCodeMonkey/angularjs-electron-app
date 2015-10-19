@@ -52,6 +52,28 @@ function readFiles(currentPath, target) {
     }
 }
 
+function buildAndroid(basePath) {
+    'use strict';
+
+    return new Promise(function (resolve, reject) {
+        exec('cd ' + path.normalize(basePath) + '&& ionic state reset && ionic build android', function (cdErr, cdOut, cdsErr) {
+            if (cdErr || cdsErr) {
+                return reject(cdsErr || cdOut);
+            }
+
+            resolve();
+        });
+    });
+}
+
+function buildiOS(basePath) {
+    'use strict';
+
+    return new Promise(function (resolve) {
+        resolve();
+    });
+}
+
 function transformTemplate(basePath, templatePath, additionalPath) {
     'use strict';
     var templateContent,
@@ -417,7 +439,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, host, createPackages, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, host, forAndroid, foriOS, cb) {
     'use strict';
 
     var self = this,
@@ -474,8 +496,20 @@ Build.prototype.build = function (type, name, version, settingsContent, host, cr
                                 if (renameErr) {
                                     return cb(renameErr);
                                 }
-                                if (createPackages) {
+                                if (forAndroid || foriOS) {
+                                    tasks.length = 0;
 
+                                    if (forAndroid) {
+                                        tasks.push(buildAndroid(self.path));
+                                    }
+                                    if (foriOS) {
+                                        tasks.push(buildiOS(self.path));
+                                    }
+                                    Promise.all(tasks).then(function () {
+                                        cb();
+                                    }, function (err) {
+                                        cb(err);
+                                    });
                                 } else {
                                     cb();
                                 }
