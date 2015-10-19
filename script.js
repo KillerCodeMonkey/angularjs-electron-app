@@ -52,10 +52,10 @@ function readFiles(currentPath, target) {
     }
 }
 
-function transformTemplate(basePath, templatePath) {
+function transformTemplate(basePath, templatePath, additionalPath) {
     'use strict';
     var templateContent,
-        relativePath = templatePath.replace(basePath + '/', '');
+        relativePath = templatePath.replace(basePath + additionalPath + '/', '');
 
     return new Promise(function (resolve, reject) {
         fs.readFile(templatePath, function (err, content) {
@@ -89,7 +89,7 @@ function concatTemplates(basePath, additionalPath) {
             readFiles(basePath + additionalPath + '/app/templates', templates);
 
             for (i; i < templates.length; i = i + 1) {
-                tasks.push(transformTemplate(basePath, templates[i]));
+                tasks.push(transformTemplate(basePath, templates[i], additionalPath));
             }
 
             Promise.all(tasks).then(function (contents) {
@@ -239,7 +239,7 @@ function createAppBuildConfig(basePath, includePaths, additionalPath) {
             });
         }
         // read default app.build.js
-        fs.readFile(additionalPath + './app.build.js', {
+        fs.readFile('./app.build.js', {
             encoding: 'utf8'
         }, function (readErr, configContent) {
             if (readErr) {
@@ -360,7 +360,7 @@ Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
 };
 
 // checkout branch of previously cloned repo
-Build.prototype.checkoutBranch = function (branch, cb) {
+Build.prototype.checkoutBranch = function (branch, buildType, cb) {
     'use strict';
 
     this.branch = branch || this.branch;
@@ -372,6 +372,10 @@ Build.prototype.checkoutBranch = function (branch, cb) {
         return cb();
     }
 
+    if (buildType === 'cli') {
+        this.additionalPath = '/www';
+    }
+
     var self = this;
 
     exec('git --version', function (err, stdout) {
@@ -380,7 +384,7 @@ Build.prototype.checkoutBranch = function (branch, cb) {
                 if (!checkoutErr) {
                     self.checkedOut = true;
                     // read settings.js
-                    Promise.settle([fs.readFileAsync(self.path + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+                    Promise.settle([fs.readFileAsync(self.path + self.additionalPath + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
                         self.checkedOut = true;
 
                         cb(null, {
@@ -413,7 +417,7 @@ Build.prototype.removeProject = function (cb) {
 };
 
 // create build directory
-Build.prototype.build = function (type, name, version, settingsContent, buildType, host, cb) {
+Build.prototype.build = function (type, name, version, settingsContent, host, createPackages, cb) {
     'use strict';
 
     var self = this,
@@ -431,9 +435,9 @@ Build.prototype.build = function (type, name, version, settingsContent, buildTyp
     if (!this.path || !this.cloned || !this.checkedOut) {
         return cb();
     }
-    if (buildType && buildType === 'cli') {
+    if (this.additionalPath) {
         isCLI = true;
-        additionalPath = '/www';
+        additionalPath = this.additionalPath;
     }
     fs.mkdirs(this.path + additionalPath + '/build/app', function (dirErr) {
         if (dirErr) {
@@ -458,19 +462,23 @@ Build.prototype.build = function (type, name, version, settingsContent, buildTyp
 
             Promise.all(tasks).then(function () {
                 if (isCLI) {
-                    fs.move(this.path + additionalPath + '/build', this.path + '/build', function (moveErr) {
+                    fs.move(self.path + additionalPath + '/build', self.path + '/build', function (moveErr) {
                         if (moveErr) {
                             return cb(moveErr);
                         }
-                        fs.remove(this.path + additionalPath, function (removeErr) {
+                        fs.remove(self.path + additionalPath, function (removeErr) {
                             if (removeErr) {
                                 return cb(removeErr);
                             }
-                            fs.move(this.path + '/build', this.path + additionalPath, function (renameErr) {
+                            fs.move(self.path + '/build', self.path + additionalPath, function (renameErr) {
                                 if (renameErr) {
                                     return cb(renameErr);
                                 }
-                                cb();
+                                if (createPackages) {
+
+                                } else {
+                                    cb();
+                                }
                             });
                         });
                     });

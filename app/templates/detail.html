@@ -39,6 +39,23 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row" ng-if="form.build.type === 'app'">
+                            <div class="form-group col-xs-6">
+                                <label for="buildType">{{dict.buildType}}</label>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="buildType" ng-model="form.build.buildType" value="pgb">
+                                        {{dict.pgb}}
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="buildType" ng-model="form.build.buildType" value="cli">
+                                        {{dict.cli}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="form-group col-xs-6">
                                 <label for="branch">{{dict.branch}}</label>
@@ -62,21 +79,6 @@
                 </accordion-group>
                 <accordion-group heading="BUILD" ng-if="checkedOut" is-open="checkedOut">
                     <fieldset ng-disabled="success">
-                        <div class="form-group col-xs-6">
-                            <label for="type">{{dict.buildType}}</label>
-                            <div class="radio">
-                                <label>
-                                    <input type="radio" name="type" ng-model="form.build.buildType" selected="" value="pgb">
-                                    {{dict.pgb}}
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input type="radio" name="type" ng-model="form.build.buildType" value="cli">
-                                    {{dict.cli}}
-                                </label>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label>{{dict.includeFiles}}</label><br>
                             <div class="input-group" ng-click="!success && checkedOut && chooseIncludeFiles()">
@@ -119,6 +121,8 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row" ng-if="form.build.type === 'app'">
                             <div class="form-group col-xs-6" ng-if="form.build.config && form.build.config.hosts">
                                 <label for="host">{{dict.host}}</label>
                                 <div class="form-group">
@@ -128,6 +132,21 @@
                                             <option value="" ng-click="changeHost(name)">{{dict.pleaseChoose}}</option>
                                             <option ng-value="name" ng-repeat="(name, host) in form.build.config.hosts">{{name}}</option>
                                         </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div ng-if="form.build.buildType === 'cli'" class="form-group col-xs-6">
+                                <div class="form-group">
+                                    <label for="host">{{dict.finalApps}}</label>
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <input type="checkbox" name="packages" ng-model="form.build.android">
+                                            {{dict.android}}
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <input type="checkbox" name="packages" ng-model="form.build.ios">
+                                            {{dict.ios}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

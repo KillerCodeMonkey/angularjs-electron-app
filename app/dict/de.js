@@ -30,5 +30,8 @@ define({
     'pleaseChoose': 'Bitte auswählen',
     'buildType': 'Bauart',
     'pgb': 'Phonegap Build',
-    'cli': 'CLI'
+    'cli': 'CLI',
+    'finalApps': 'Erzeuge App-Dateien',
+    'android': 'Android',
+    'ios': 'iOS'
 });

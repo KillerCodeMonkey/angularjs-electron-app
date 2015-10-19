@@ -25,7 +25,8 @@ define([
                 buildForm: {},
                 build: {
                     type: 'app',
-                    includeFiles: []
+                    includeFiles: [],
+                    buildType: 'pgb'
                 }
             };
 
@@ -78,7 +79,7 @@ define([
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, fileContents) {
+                    buildObject.checkoutBranch($scope.form.build.branch, $scope.form.build.buildType, function (checkoutErr, fileContents) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {
@@ -107,7 +108,7 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.buildType, $scope.form.build.host, function (someError, zipPath) {
+                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.host, $scope.form.build.packages, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);
                         $timeout(function () {
