@@ -57,7 +57,7 @@ function buildAndroid(basePath) {
 
     return new Promise(function (resolve, reject) {
         exec('cd ' + path.normalize(basePath) + '&& ionic state reset && ionic build android', function (cdErr, cdOut, cdsErr) {
-            if (cdErr || cdsErr) {
+            if (cdErr && cdsErr) {
                 return reject(cdsErr || cdOut);
             }
 
