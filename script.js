@@ -27,7 +27,7 @@ function getDate() {
     var now = new Date();
     var todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()));
 
-    return todayUTC.toISOString().slice(0, 10).replace(/-/g, '-') + 'T' + now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+    return todayUTC.toISOString().slice(0, 10).replace(/-/g, '-') + 'T' + now.getHours() + '_' + now.getMinutes() + '_' + now.getSeconds();
 }
 
 function readFiles(currentPath, target) {
@@ -396,6 +396,8 @@ Build.prototype.checkoutBranch = function (branch, buildType, cb) {
 
     if (buildType === 'cli') {
         this.additionalPath = '/www';
+    } else {
+        this.additionalPath = '';
     }
 
     var self = this;
