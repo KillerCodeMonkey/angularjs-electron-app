@@ -52,7 +52,7 @@ function readFiles(currentPath, target) {
     }
 }
 
-function buildAndroid(basePath) {
+function buildAndroid(basePath, targetDir) {
     'use strict';
 
     return new Promise(function (resolve, reject) {
@@ -60,7 +60,7 @@ function buildAndroid(basePath) {
             if (cdErr && cdsErr) {
                 return reject(cdsErr || cdOut);
             }
-            fs.copy(path.normalize(basePath + '/platforms/android/build/outputs/apk'), path.normalize(basePath + '_build_' + getDate()), function (statErr) {
+            fs.copy(path.normalize(basePath + '/platforms/android/build/outputs/apk'), path.normalize(targetDir), function (statErr) {
                 if (statErr) {
                     return reject();
                 }
@@ -504,16 +504,17 @@ Build.prototype.build = function (type, name, version, settingsContent, host, fo
                                 }
                                 if (forAndroid || foriOS) {
                                     tasks.length = 0;
+                                    var targetDir = self.path + '_build_' + getDate();
 
                                     if (forAndroid) {
-                                        tasks.push(buildAndroid(self.path));
+                                        tasks.push(buildAndroid(self.path, targetDir));
                                     }
                                     if (foriOS) {
-                                        tasks.push(buildiOS(self.path));
+                                        tasks.push(buildiOS(self.path, targetDir));
                                     }
                                     Promise.all(tasks).then(function () {
                                         fs.remove(self.path, function () {
-                                            cb();
+                                            cb(null, path.normalize(targetDir));
                                         });
                                     }, function (err) {
                                         cb(err);
