@@ -60,8 +60,12 @@ function buildAndroid(basePath) {
             if (cdErr && cdsErr) {
                 return reject(cdsErr || cdOut);
             }
-
-            resolve();
+            fs.copy(path.normalize(basePath + '/platforms/android/build/outputs/apk'), path.normalize(basePath + '_build_' + getDate()), function (statErr) {
+                if (statErr) {
+                    return reject();
+                }
+                resolve();
+            });
         });
     });
 }
@@ -508,7 +512,9 @@ Build.prototype.build = function (type, name, version, settingsContent, host, fo
                                         tasks.push(buildiOS(self.path));
                                     }
                                     Promise.all(tasks).then(function () {
-                                        cb();
+                                        fs.remove(self.path, function () {
+                                            cb();
+                                        });
                                     }, function (err) {
                                         cb(err);
                                     });
