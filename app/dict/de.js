@@ -18,6 +18,7 @@ define({
     'gitlabLogin': 'GitLab Login',
     'checkout': 'Checkout',
     'minify': 'Minifizieren',
+    'next': 'weiter',
     'packaging': 'Paketieren',
     'imagemin': 'Bilder optimieren',
     'appVersion': 'App Version',
