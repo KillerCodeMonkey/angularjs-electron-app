@@ -18,14 +18,16 @@ define([
         'gitlabService',
         'id',
         function ($q, $location, $state, $scope, $timeout, $modalInstance, $loadingOverlay, localStorageService, gitlabService, id) {
-            var buildObject = new Build();
+            var buildObject;
 
             $scope.isLoading = true;
             $scope.form = {
+                step: 1,
                 buildForm: {},
                 build: {
                     type: 'app',
-                    includeFiles: []
+                    includeFiles: [],
+                    buildType: 'pgb'
                 }
             };
 
@@ -78,7 +80,7 @@ define([
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, function (checkoutErr, fileContents) {
+                    buildObject.checkoutBranch($scope.form.build.branch, $scope.form.build.buildType, function (checkoutErr, fileContents) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {
@@ -87,7 +89,7 @@ define([
                             });
                         } else {
                             $timeout(function () {
-                                $scope.checkedOut = true;
+                                $scope.form.step = 3;
                                 $scope.form.build.settings = fileContents.settings;
                                 $scope.form.build.config = fileContents.build;
                                 $timeout(function () {
@@ -107,7 +109,14 @@ define([
             }
             function build() {
                 $loadingOverlay.show();
-                buildObject.build($scope.form.build.type, $scope.form.build.appName, $scope.form.build.appVersion, $scope.form.build.settings, $scope.form.build.host, function (someError, zipPath) {
+                buildObject.build({
+                    appName: $scope.form.build.appName,
+                    appVersion: $scope.form.build.appVersion,
+                    settingsContent: $scope.form.build.settings,
+                    host: $scope.form.build.host,
+                    forAndroid: $scope.form.build.android,
+                    foriOS: $scope.form.build.ios
+                }, function (someError, zipPath) {
                     if (someError) {
                         console.log(someError);
                         $timeout(function () {
@@ -124,11 +133,22 @@ define([
             }
 
             $scope.action = function () {
-                if ($scope.checkedOut) {
-                    build();
-                } else {
-                    checkout();
+                // create correct build object
+                if ($scope.form.step === 1) {
+                    $scope.form.step = 2;
+                    if ($scope.form.build.type === 'app') {
+                        buildObject = $scope.form.build.buildType === 'pgb' ? new PhoneGapBuild() : new IonicCLIBuild();
+                        return;
+                    }
+                    buildObject = new WebAppBuild();
+                    return;
                 }
+                // checkout project
+                if ($scope.form.step === 2) {
+                    return checkout();
+                }
+                // start build
+                return build();
             };
 
             $scope.changeHost = function () {
