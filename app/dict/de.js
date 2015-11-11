@@ -34,5 +34,6 @@ define({
     'cli': 'CLI',
     'finalApps': 'Erzeuge App-Dateien',
     'android': 'Android',
-    'ios': 'iOS'
+    'ios': 'iOS',
+    'bundleID': 'Bundle-ID'
 });

@@ -105,7 +105,7 @@
                             </div>
                         </div>
                         <div class="row" ng-if="form.build.type === 'app'">
-                            <div class="form-group col-xs-6">
+                            <div class="form-group col-xs-4">
                                 <label for="type">{{dict.appName}}</label>
                                 <div class="form-group">
                                     <div class="input-group">
@@ -114,12 +114,21 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group col-xs-6">
+                            <div class="form-group col-xs-4">
                                 <label for="type">{{dict.appVersion}}</label>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-tag input-icon"></i></span>
                                         <input class="form-control" ng-model="form.build.appVersion" placeholder="{{dict.version}}" name="appVersion" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-4">
+                                <label for="type">{{dict.bundleID}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-link input-icon"></i></span>
+                                        <input class="form-control" ng-model="form.build.bundleID" placeholder="{{dict.bundleID}}" name="bundleID" type="text" required>
                                     </div>
                                 </div>
                             </div>

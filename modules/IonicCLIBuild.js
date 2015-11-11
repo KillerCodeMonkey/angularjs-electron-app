@@ -55,6 +55,7 @@ IonicCLIBuild.prototype.build = function (options, cb) {
     self.appName = options.appName;
     self.appVersion = options.appVersion;
     self.host = options.host;
+    self.bundleID = options.bundleID;
 
     // necessary data not set
     if (!this.path || !this.cloned || !this.checkedOut) {
@@ -76,7 +77,7 @@ IonicCLIBuild.prototype.build = function (options, cb) {
                     return self.uglifyMinify(self.path + self.additionalPath);
                 }),
                 self.clearIndex(self.path + self.additionalPath, options.appVersion),
-                self.createConfig(self.path, self.path, self.appName, self.appVersion)
+                self.createConfig(self.path, self.path, self.appName, self.appVersion, self.bundleID)
             ];
 
             Promise.all(tasks).then(function () {

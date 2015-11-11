@@ -9,7 +9,7 @@ function MobileBuild () {
 // inherit everything from Build class
 MobileBuild.prototype = new Build();
 // create and change config.xml
-MobileBuild.prototype.createConfig = function (basePath, targetPath, name, version) {
+MobileBuild.prototype.createConfig = function (basePath, targetPath, name, version, bundleID) {
     'use strict';
     return new Promise(function (resolve, reject) {
         fs.readFile(basePath + '/config.xml', {
@@ -30,6 +30,10 @@ MobileBuild.prototype.createConfig = function (basePath, targetPath, name, versi
                 configContent = configContent.replace(/\<widget([^\>]*)versionCode\s*=\s*"[^\>"]*"([^\>]*)\>/, '');
             }
             configContent = configContent.replace(/\<widget([^\>]*)version\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1version="' + version + '"$2>');
+            // set optional bundleID
+            if (bundleID) {
+                configContent = configContent.replace(/\<widget([^\>]*)id\s*=\s*"[^\>"]*"([^\>]*)\>/, '<widget$1id="' + bundleID + '"$2>');
+            }
             // write new config.xml to build folder
             fs.writeFile(targetPath + '/config.xml', configContent, function (writeErr) {
                 if (writeErr) {

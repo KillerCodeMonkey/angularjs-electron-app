@@ -99,6 +99,9 @@ define([
                                     if ($scope.project.tags && $scope.project.tags[0]) {
                                         $scope.form.build.appVersion = $scope.project.tags[0].name;
                                     }
+                                    if ($scope.form.build.config && $scope.form.build.config.bundleID) {
+                                        $scope.form.build.bundleID = $scope.form.build.config.bundleID;
+                                    }
                                 });
 
                                 $loadingOverlay.hide();
@@ -112,6 +115,7 @@ define([
                 buildObject.build({
                     appName: $scope.form.build.appName,
                     appVersion: $scope.form.build.appVersion,
+                    bundleID: $scope.form.build.bundleID,
                     settingsContent: $scope.form.build.settings,
                     host: $scope.form.build.host,
                     forAndroid: $scope.form.build.android,
