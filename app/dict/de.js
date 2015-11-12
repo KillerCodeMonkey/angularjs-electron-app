@@ -18,6 +18,7 @@ define({
     'gitlabLogin': 'GitLab Login',
     'checkout': 'Checkout',
     'minify': 'Minifizieren',
+    'next': 'weiter',
     'packaging': 'Paketieren',
     'imagemin': 'Bilder optimieren',
     'appVersion': 'App Version',
@@ -27,5 +28,12 @@ define({
     'includeFiles': 'Zusätzliche Dateien hinzufügen (z.B. Übersetzungen)',
     'includeFilesHint': 'Alle Dateien des Projekts, die nicht in einer JavaScript-Datei über define geladen, aber benötigt werden, z.B. Übersetzungsdateien.',
     'host': 'Host',
-    'pleaseChoose': 'Bitte auswählen'
+    'pleaseChoose': 'Bitte auswählen',
+    'buildType': 'Bauart',
+    'pgb': 'Phonegap Build',
+    'cli': 'CLI',
+    'finalApps': 'Erzeuge App-Dateien',
+    'android': 'Android',
+    'ios': 'iOS',
+    'bundleID': 'Bundle-ID'
 });

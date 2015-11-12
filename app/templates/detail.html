@@ -5,30 +5,49 @@
     <loading-spinner loading="isLoading">
         <form id="buildForm" name="form.buildForm">
             <accordion close-others="true">
-                <accordion-group heading="CHECKOUT" is-open="!checkedOut">
-                    <fieldset ng-disabled="checkedOut">
-                        <div class="row">
-                            <div class="form-group col-xs-6">
-                                <label for="type">{{dict.type}}</label>
-                                <div class="radio disabled">
-                                    <label>
-                                        <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
-                                        {{dict.backend}}
-                                    </label>
-                                </div>
-                                <div class="radio">
-                                    <label>
-                                        <input type="radio" name="type" ng-model="form.build.type" value="webapp">
-                                        {{dict.webapp}}
-                                    </label>
-                                </div>
-                                <div class="radio">
-                                    <label>
-                                        <input type="radio" name="type" ng-model="form.build.type" value="app">
-                                        {{dict.app}}
-                                    </label>
-                                </div>
+                <accordion-group heading="TYP" ng-if="form.step === 1" is-open="form.step === 1">
+                    <div class="row">
+                        <div class="form-group col-xs-6">
+                            <label for="type">{{dict.type}}</label>
+                            <div class="radio disabled">
+                                <label>
+                                    <input type="radio" name="type" ng-model="form.build.type" value="backend" disabled>
+                                    {{dict.backend}}
+                                </label>
                             </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="type" ng-model="form.build.type" value="webapp">
+                                    {{dict.webapp}}
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="type" ng-model="form.build.type" value="app">
+                                    {{dict.app}}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group col-xs-6" ng-if="form.build.type === 'app'">
+                            <label for="buildType">{{dict.buildType}}</label>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="buildType" ng-model="form.build.buildType" value="pgb">
+                                    {{dict.pgb}}
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="buildType" ng-model="form.build.buildType" value="cli">
+                                    {{dict.cli}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </accordion-group>
+                <accordion-group heading="CHECKOUT" ng-if="form.step === 2" is-open="form.step === 2">
+                    <fieldset ng-disabled="form.step !== 2">
+                        <div class="row">
                             <div class="form-group col-xs-6">
                                 <label for="type">{{dict.gitlabLogin}}</label>
                                 <div class="form-group">
@@ -51,7 +70,7 @@
                              </div>
                             <div class="form-group col-xs-6">
                                 <label for="branch">{{dict.destination}}</label><br>
-                                <div class="input-group" ng-click="!checkedOut && chooseDestination()">
+                                <div class="input-group" ng-click="chooseDestination()">
                                     <span class="input-group-addon"><i class="fa fa-folder-open input-icon"></i></span>
                                     <input type="text" class="form-control" name="destination" value="{{form.build.path}}" ng-model="form.build.path" placeholder="{{dict.chooseDestination}}" readonly="" required>
                                 </div>
@@ -60,11 +79,11 @@
                         <div class="clearfix"></div>
                     </fieldset>
                 </accordion-group>
-                <accordion-group heading="BUILD" ng-if="checkedOut" is-open="checkedOut">
+                <accordion-group heading="BUILD" ng-if="form.step === 3" is-open="form.step === 3">
                     <fieldset ng-disabled="success">
                         <div class="form-group">
                             <label>{{dict.includeFiles}}</label><br>
-                            <div class="input-group" ng-click="!success && checkedOut && chooseIncludeFiles()">
+                            <div class="input-group" ng-click="!success && chooseIncludeFiles()">
                                 <span class="input-group-addon"><i class="fa fa-files-o input-icon"></i></span>
                                 <input type="text" class="form-control" placeholder="{{dict.chooseDestination}}" readonly="">
                                 <span class="input-group-addon"
@@ -86,7 +105,7 @@
                             </div>
                         </div>
                         <div class="row" ng-if="form.build.type === 'app'">
-                            <div class="form-group col-xs-6">
+                            <div class="form-group col-xs-4">
                                 <label for="type">{{dict.appName}}</label>
                                 <div class="form-group">
                                     <div class="input-group">
@@ -95,7 +114,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group col-xs-6">
+                            <div class="form-group col-xs-4">
                                 <label for="type">{{dict.appVersion}}</label>
                                 <div class="form-group">
                                     <div class="input-group">
@@ -104,6 +123,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group col-xs-4">
+                                <label for="type">{{dict.bundleID}}</label>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-link input-icon"></i></span>
+                                        <input class="form-control" ng-model="form.build.bundleID" placeholder="{{dict.bundleID}}" name="bundleID" type="text" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" ng-if="form.build.type !== 'backend'">
                             <div class="form-group col-xs-6" ng-if="form.build.config && form.build.config.hosts">
                                 <label for="host">{{dict.host}}</label>
                                 <div class="form-group">
@@ -113,6 +143,21 @@
                                             <option value="" ng-click="changeHost(name)">{{dict.pleaseChoose}}</option>
                                             <option ng-value="name" ng-repeat="(name, host) in form.build.config.hosts">{{name}}</option>
                                         </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div ng-if="form.build.buildType === 'cli'" class="form-group col-xs-6">
+                                <div class="form-group">
+                                    <label for="host">{{dict.finalApps}}</label>
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <input type="checkbox" name="packages" ng-model="form.build.android">
+                                            {{dict.android}}
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <input type="checkbox" name="packages" ng-model="form.build.ios">
+                                            {{dict.ios}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -132,7 +177,8 @@
             </div>
         </div>
         <div class="col-xs-6">
-            <button form="buildForm" ng-if="!success" class="btn btn-success" ng-click="action()" ng-disabled="!form.buildForm.$valid">{{checkedOut ? dict.build : dict.checkout}}</button>
+            <button class="btn btn-success" ng-click="action()" ng-if="!success && form.step === 1">{{dict.next}}</button>
+            <button form="buildForm" class="btn btn-success" ng-click="action()" ng-if="!success && form.step > 1" ng-disabled="!form.buildForm.$valid">{{form.step === 3 ? dict.build : dict.checkout}}</button>
             <button class="btn btn-primary" type="button" ng-click="cancel()">{{dict.finish}}</button>
         </div>
     </div>
