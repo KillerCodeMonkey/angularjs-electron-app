@@ -73,14 +73,14 @@ define([
                 repoUrl = 'https://' + localStorageService.get('username') + ':' + $scope.form.build.password + '@' + repoUrl;
 
                 $loadingOverlay.show();
-                buildObject.cloneProject($scope.form.build.path, repoUrl, $scope.project.name, function (cloneErr) {
+                buildObject.cloneProject($scope.form.build.path, repoUrl, $scope.project.name, $scope.form.build.branch, function (cloneErr) {
                     if (cloneErr) {
                         console.log(cloneErr);
                         return $timeout(function () {
                             $loadingOverlay.hide();
                         });
                     }
-                    buildObject.checkoutBranch($scope.form.build.branch, $scope.form.build.buildType, function (checkoutErr, fileContents) {
+                    buildObject.readSettings($scope.form.build.buildType, function (checkoutErr, fileContents) {
                         if (checkoutErr) {
                             buildObject.removeProject(function () {
                                 return $timeout(function () {

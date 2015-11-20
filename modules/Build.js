@@ -293,11 +293,14 @@ Build.prototype.chooseIncludeFiles = function (cb) {
 };
 
 // clone project to chosen folder
-Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
+Build.prototype.cloneProject = function (folderPath, repoUrl, name, branch, cb) {
     'use strict';
+
+    branch = branch || 'master';
 
     this.path = folderPath || this.path;
     this.repoUrl = repoUrl || this.repoUrl;
+    this.branch = branch || this.branch;
     this.name = name || this.name;
 
     if (!this.path || !this.repoUrl || !this.name) {
@@ -311,12 +314,14 @@ Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
 
     exec('git --version', function (err, stdout) {
         if (stdout.match(/git version/g)) {
-            exec('cd ' + self.path + ' && git clone --depth 1 ' + self.repoUrl, function (cloneErr) {
+            exec('cd ' + self.path + ' && git clone ' + (branch ? '-b ' + branch + ' ' : '') + '--depth 1 ' + self.repoUrl, function (cloneErr) {
                 if (!cloneErr) {
                     self.cloned = true;
+                    self.checkedOut = true;
                     self.path += '/' + self.name;
                 } else {
                     self.cloned = false;
+                    self.checkedOut = false;
                 }
                 cb(cloneErr);
             });
@@ -326,13 +331,11 @@ Build.prototype.cloneProject = function (folderPath, repoUrl, name, cb) {
     });
 };
 
-// checkout branch of previously cloned repo
-Build.prototype.checkoutBranch = function (branch, buildType, cb) {
+// read config and settings file
+Build.prototype.readSettings = function (buildType, cb) {
     'use strict';
 
-    this.branch = branch || this.branch;
-
-    if (!this.path || !this.branch) {
+    if (!this.path) {
         if (cb) {
             return cb('missing params');
         }
@@ -342,28 +345,16 @@ Build.prototype.checkoutBranch = function (branch, buildType, cb) {
     var self = this;
 
     exec('git --version', function (err, stdout) {
-        if (stdout.match(/git version/g)) {
-            exec('cd ' + self.path + ' && git checkout -b ' + self.branch + '_build' + ' origin/' + self.branch, function (checkoutErr) {
-                if (!checkoutErr) {
-                    self.checkedOut = true;
-                    // read settings.js
-                    Promise.settle([fs.readFileAsync(self.path + self.additionalPath + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
-                        self.checkedOut = true;
+        self.checkedOut = true;
+        // read settings.js
+        Promise.settle([fs.readFileAsync(self.path + self.additionalPath + '/app/settings.js', 'utf8'), fs.readFileAsync(self.path + '/build.json', 'utf8')]).then(function (results) {
+            self.checkedOut = true;
 
-                        cb(null, {
-                            settings: results[0].isRejected() ? '' : results[0].value(),
-                            build: results[1].isRejected() ? {} : JSON.parse(results[1].value())
-                        });
-                    });
-                } else {
-                    console.log(checkoutErr);
-                    self.checkedOut = false;
-                    cb(checkoutErr);
-                }
+            cb(null, {
+                settings: results[0].isRejected() ? '' : results[0].value(),
+                build: results[1].isRejected() ? {} : JSON.parse(results[1].value())
             });
-        } else {
-            cb('no git');
-        }
+        });
     });
 };
 
