@@ -1,2 +1,2 @@
 # angularjs-electron-app
-An little playground for electron and angularjs
+A little playground for electron and angularjs
